@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Kenya Climate Dashboard{% endblock %}</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    /* ── DESIGN TOKENS ── */
+    :root {
+      --cream:       #f7f4ef;
+      --cream-dark:  #ede9e1;
+      --cream-mid:   #f2ede5;
+      --warm-white:  #fdfbf8;
+      --amber-soft:  #f5e6c8;
+      --amber:       #c8860a;
+      --amber-light: #fdf3dc;
+      --terracotta:  #b85c38;
+      --terra-light: #faeae4;
+      --sage:        #4a7c59;
+      --sage-light:  #e8f0eb;
+      --ink:         #1e1a14;
+      --ink-mid:     #4a4539;
+      --ink-soft:    #7a7368;
+      --ink-faint:   #b0a898;
+      --border:      #ddd8cf;
+      --border-soft: #e8e3db;
+      --card-shadow: 0 1px 3px rgba(30,26,20,0.06), 0 4px 16px rgba(30,26,20,0.04);
+      --radius:      6px;
+      --radius-lg:   10px;
+    }
+
+    /* ── RESET ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { font-size: 14px; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── NAV ── */
+    nav {
+      background: var(--warm-white);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      height: 52px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      justify-content: space-between;
+    }
+
+    .nav-brand {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: 0.01em;
+      margin-right: 2rem;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 0;
+      list-style: none;
+      height: 100%;
+    }
+
+    .nav-links a {
+      display: flex;
+      align-items: center;
+      height: 52px;
+      padding: 0 1rem;
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+      text-decoration: none;
+      border-bottom: 2px solid transparent;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: var(--amber);
+      border-bottom-color: var(--amber);
+    }
+
+    /* ── PAGE LAYOUT ── */
+    .page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    /* ── PAGE HEADER ── */
+    .page-header {
+      margin-bottom: 2rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border-soft);
+    }
+
+    .page-header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.75rem;
+      font-weight: 500;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+      margin-bottom: 0.35rem;
+    }
+
+    .page-header .subtitle {
+      font-size: 0.82rem;
+      color: var(--ink-soft);
+      font-weight: 300;
+      letter-spacing: 0.01em;
+    }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      font-size: 0.68rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+      margin: 2rem 0 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-soft);
+    }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--warm-white);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.5rem;
+      box-shadow: var(--card-shadow);
+      margin-bottom: 1rem;
+    }
+
+    .card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--ink);
+      margin-bottom: 0.2rem;
+    }
+
+    .card-meta {
+      font-size: 0.72rem;
+      color: var(--ink-faint);
+      margin-bottom: 1rem;
+      font-family: 'DM Mono', monospace;
+    }
+
+    .card-subtitle {
+      font-size: 0.78rem;
+      color: var(--ink-soft);
+      line-height: 1.5;
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border-soft);
+    }
+
+    /* ── GRID ── */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    @media (max-width: 768px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    }
+
+    /* ── KPI CARDS ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .kpi-card {
+      background: var(--warm-white);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1.25rem;
+      box-shadow: var(--card-shadow);
+    }
+
+    .kpi-label {
+      font-size: 0.68rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+      margin-bottom: 0.3rem;
+    }
+
+    .kpi-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      font-weight: 400;
+      color: var(--ink);
+      line-height: 1;
+      margin-bottom: 0.2rem;
+    }
+
+    .kpi-value sup {
+      font-size: 0.7rem;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--ink-soft);
+    }
+
+    .kpi-delta {
+      font-size: 0.72rem;
+      font-family: 'DM Mono', monospace;
+      color: var(--ink-soft);
+    }
+
+    .kpi-delta.up   { color: var(--terracotta); }
+    .kpi-delta.down { color: var(--sage); }
+
+    /* ── CHART WRAP ── */
+    .chart-wrap {
+      position: relative;
+      height: 280px;
+    }
+
+    .chart-wrap.tall { height: 360px; }
+    .chart-wrap.short { height: 200px; }
+
+    /* ── FILTER BAR ── */
+    .filter-bar {
+      background: var(--warm-white);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1.5rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+      align-items: center;
+      box-shadow: var(--card-shadow);
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .filter-label {
+      font-size: 0.68rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+    }
+
+    /* ── INPUTS ── */
+    input[type="number"],
+    input[type="text"],
+    select {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem;
+      color: var(--ink);
+      background: var(--cream);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.4rem 0.65rem;
+      outline: none;
+      transition: border-color 0.15s;
+      width: auto;
+    }
+
+    input[type="number"]:focus,
+    select:focus {
+      border-color: var(--amber);
+    }
+
+    /* ── MULTISELECT DROPDOWN ── */
+    .multiselect {
+      position: relative;
+    }
+
+    .multiselect-trigger {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem;
+      color: var(--ink);
+      background: var(--cream);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.4rem 2rem 0.4rem 0.65rem;
+      cursor: pointer;
+      min-width: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      user-select: none;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: border-color 0.15s;
+    }
+
+    .multiselect-trigger:hover { border-color: var(--amber); }
+    .multiselect-trigger::after {
+      content: '▾';
+      position: absolute;
+      right: 0.6rem;
+      color: var(--ink-faint);
+      font-size: 0.75rem;
+    }
+
+    .multiselect-dropdown {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      min-width: 220px;
+      max-height: 260px;
+      overflow-y: auto;
+      background: var(--warm-white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 4px 24px rgba(30,26,20,0.12);
+      z-index: 200;
+      display: none;
+      padding: 0.4rem 0;
+    }
+
+    .multiselect-dropdown.open { display: block; }
+
+    .multiselect-option {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 0.85rem;
+      font-size: 0.8rem;
+      color: var(--ink-mid);
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+
+    .multiselect-option:hover { background: var(--amber-light); }
+
+    .multiselect-option input[type="checkbox"] {
+      accent-color: var(--amber);
+      width: 13px;
+      height: 13px;
+      border-radius: 3px;
+      margin: 0;
+      padding: 0;
+      border: none;
+      background: none;
+    }
+
+    .multiselect-actions {
+      padding: 0.5rem 0.85rem;
+      border-top: 1px solid var(--border-soft);
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .multiselect-actions button {
+      font-size: 0.72rem;
+      color: var(--amber);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    /* ── BUTTONS ── */
+    .btn {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      padding: 0.4rem 1rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--amber);
+      background: var(--amber-light);
+      color: var(--amber);
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .btn:hover {
+      background: var(--amber);
+      color: var(--warm-white);
+    }
+
+    .btn-primary {
+      background: var(--amber);
+      color: var(--warm-white);
+      border-color: var(--amber);
+    }
+
+    .btn-primary:hover {
+      background: #a56e08;
+      border-color: #a56e08;
+    }
+
+    /* ── REGRESSION CALLOUT ── */
+    .callout {
+      background: linear-gradient(135deg, var(--amber-light) 0%, var(--terra-light) 100%);
+      border: 1px solid var(--amber-soft);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1.25rem;
+      font-size: 0.82rem;
+      color: var(--ink-mid);
+      line-height: 1.6;
+    }
+
+    .callout strong { color: var(--ink); }
+
+    /* ── ERROR ── */
+    .error-msg {
+      font-size: 0.78rem;
+      color: var(--terracotta);
+      padding: 0.5rem 0;
+      display: none;
+    }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--cream-dark); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="/">Kenya · Climate</a>
+  <ul class="nav-links">
+    <li><a href="/overview">Overview</a></li>
+    <li><a href="/trends">Trends</a></li>
+    <li><a href="/inequality">Inequality</a></li>
+    <li><a href="/african-comparison">Africa</a></li>
+    <li><a href="/methodology">Methodology</a></li>
+    <li><a href="/documentation">Docs</a></li>
+  </ul>
+</nav>
+
+<div class="page">
+  {% block content %}{% endblock %}
+</div>
+
+</body>
+</html>

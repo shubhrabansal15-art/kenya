@@ -1,0 +1,446 @@
+{% extends "base.html" %}
+{% block title %}Methodology{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <h1>Methodology</h1>
+  <p class="subtitle">Analytical framework, derived metrics, and statistical methods used to evaluate Kenya's carbon–growth relationship.</p>
+</div>
+
+<!-- RESEARCH QUESTION -->
+<div class="section-label">Research Question</div>
+
+<div class="callout" style="margin-bottom:1.5rem;">
+  Is Kenya achieving economic growth with <strong>lower-than-expected carbon emissions</strong> relative to its income level —
+  and does this constitute meaningful decoupling?
+</div>
+
+<!-- DECOUPLING + ELASTICITY CHARTS -->
+<div class="section-label">Core Metrics</div>
+
+<!-- Change 6: driver analysis intro sentence above decomposition charts -->
+<p style="font-size:0.8rem; color:var(--ink-mid); line-height:1.75; margin:0 0 0.85rem;">
+  Kenya's emissions growth is primarily driven by income expansion, partially offset by improvements in energy intensity.
+  The charts below decompose these dynamics using two complementary metrics.
+</p>
+
+<div class="grid-2">
+
+  <div class="card">
+    <div class="card-title">Decoupling Index</div>
+    <div class="card-meta">GDP growth − CO₂ growth (percentage points) · annual · Kenya</div>
+    <div class="chart-wrap short">
+      <canvas id="decouplingChart"></canvas>
+    </div>
+    <p class="card-subtitle">
+      <strong>Formula:</strong> Decoupling Index = ΔGDP% − ΔCO₂%<br><br>
+      Positive values mean GDP grew faster than emissions — <em>relative decoupling</em>.
+      Negative values mean emissions outpaced output. The dashed zero line is the threshold
+      between coupled and decoupled growth. Points are coloured green (decoupled) or
+      terracotta (coupled) for quick reading.
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Emission Elasticity</div>
+    <div class="card-meta">%ΔCO₂ / %ΔGDP · annual · Kenya</div>
+    <div class="chart-wrap short">
+      <canvas id="elasticityChart"></canvas>
+    </div>
+    <p class="card-subtitle">
+      <strong>Formula:</strong> ε = (%ΔCO₂) / (%ΔGDP)<br><br>
+      ε &gt; 1 → emissions grow faster than GDP &nbsp;·&nbsp;
+      0 &lt; ε &lt; 1 → relative decoupling &nbsp;·&nbsp;
+      ε &lt; 0 → strong decoupling.
+      High year-on-year volatility reflects Kenya's dependence on weather-sensitive
+      hydropower and agriculture cycles.
+    </p>
+  </div>
+
+</div>
+
+<!-- WHY DECOUPLING MATTERS -->
+<div class="section-label">Why Decoupling Matters</div>
+
+<div class="card">
+  <div class="card-title">The Case for Measuring Decoupling</div>
+  <div class="card-meta">conceptual framework · policy relevance</div>
+  <p class="card-subtitle" style="border:none; padding:0; margin:0; font-size:0.82rem; line-height:1.85; color:var(--ink-mid);">
+    The dominant assumption in development economics has historically been that economic growth
+    requires proportional increases in energy use and emissions — a coupled relationship.
+    <strong>Decoupling challenges this assumption</strong> by asking whether GDP and CO₂ can diverge:
+    whether a country can grow richer while emitting less per unit of output.<br><br>
+    For Kenya, this matters for two reasons. First, Kenya is a developing economy under pressure
+    to grow — yet is disproportionately vulnerable to climate change it did not cause.
+    Second, if Kenya can demonstrate decoupling, it provides a replicable model for other
+    low-income African economies navigating the same tension between development and emissions.<br><br>
+    <strong>Relative decoupling</strong> (emissions grow, but slower than GDP) is a necessary first step.
+    <strong>Absolute decoupling</strong> (emissions fall while GDP grows) is the ultimate policy target
+    aligned with net-zero pathways.
+  </p>
+</div>
+
+<!-- REGRESSION -->
+<div class="section-label">Regression Analysis</div>
+
+<div class="card">
+  <div class="card-title">Regression Residual — Kenya vs Global Income–Emissions Curve</div>
+  <div class="card-meta">log-linear OLS · CO₂ per capita ~ GDP per capita · cross-country · latest year</div>
+  <div class="callout" id="regressionCallout" style="margin:0.85rem 0 0;">
+    Loading regression result…
+  </div>
+  <p class="card-subtitle" style="margin-top:1rem;">
+    <strong>Why log regression?</strong> The income–emissions relationship is non-linear:
+    richer countries emit more, but with diminishing returns. Taking the natural log of both
+    GDP per capita and CO₂ per capita linearises this curve for standard OLS estimation.
+    The slope β is the income elasticity of emissions — how much CO₂ changes for each 1% rise
+    in income. The residual is Kenya's actual log-CO₂ minus its predicted log-CO₂ given its
+    income. A negative residual means Kenya emits <em>less</em> than the global norm for its
+    wealth level — the primary evidence of structural carbon efficiency.
+  </p>
+</div>
+
+<!-- CAGR CARDS -->
+<div class="section-label">Long-Run CAGR Summary (2002 – 2022)</div>
+
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-label">GDP CAGR</div>
+    <div class="kpi-value" id="kpi_gdp_cagr">—</div>
+    <div class="kpi-delta">GDP per capita · 2002–2022</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">CO₂ CAGR</div>
+    <div class="kpi-value" id="kpi_co2_cagr">—</div>
+    <div class="kpi-delta">total CO₂ · 2002–2022</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Decoupling Score</div>
+    <div class="kpi-value" id="kpi_decoupling_score">—</div>
+    <div class="kpi-delta" id="kpi_decoupling_label">Decoupling Score = GDP CAGR − CO₂ CAGR · long-run structural metric</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">Reading the CAGR</div>
+  <div class="card-meta">compound annual growth rate · interpretation</div>
+  <p class="card-subtitle" style="border:none; padding:0; margin:0; font-size:0.82rem; line-height:1.85; color:var(--ink-mid);">
+    CAGR is used to summarise long-run growth by smoothing year-to-year volatility. In this
+    analysis, it underpins the <strong>Decoupling Score</strong>
+    (<strong>GDP CAGR − CO₂ CAGR</strong>), which provides a structural measure of whether
+    economic growth outpaces emissions over the full period. A positive score indicates that
+    GDP expanded faster than emissions on a sustained basis — the long-run complement to the
+    annual decoupling index shown above.
+  </p>
+</div>
+
+<!-- DERIVED METRICS — Change 8: hierarchy intro -->
+<div class="section-label">Metric Hierarchy</div>
+
+<div class="callout" style="margin-bottom:1.5rem;">
+  These four metrics form a deliberate hierarchy. The <strong>regression residual</strong> is the
+  primary evidence — it benchmarks Kenya against a global income–emissions curve and is the most
+  methodologically robust indicator of structural carbon efficiency. The <strong>elasticity</strong>
+  is the secondary metric — it captures year-on-year sensitivity but is volatile and should be
+  read alongside the long-run CAGR. The <strong>decoupling index</strong> and <strong>CAGR score</strong>
+  are summary metrics that communicate the same underlying relationship in more accessible terms.
+</div>
+
+<script>
+const BASE_OPTS = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      backgroundColor: "#fdfbf8",
+      titleColor: "#1e1a14",
+      bodyColor: "#4a4539",
+      borderColor: "#ddd8cf",
+      borderWidth: 1,
+      padding: 10,
+      titleFont: { family: "'Playfair Display', serif", size: 12 },
+      bodyFont:  { family: "'DM Sans', sans-serif", size: 11 }
+    }
+  },
+  scales: {
+    x: {
+      ticks: { font: { family: "'DM Sans', sans-serif", size: 10 }, color: "#7a7368", maxTicksLimit: 10 },
+      grid:  { color: "rgba(180,168,152,0.15)" },
+      border:{ color: "#ddd8cf" }
+    },
+    y: {
+      ticks: { font: { family: "'DM Sans', sans-serif", size: 10 }, color: "#7a7368" },
+      grid:  { color: "rgba(180,168,152,0.15)" },
+      border:{ color: "#ddd8cf" }
+    }
+  }
+};
+
+const zeroLinePlugin = {
+  id: "zeroLine",
+  afterDraw(chart) {
+    const { ctx, chartArea: { left, right }, scales: { y } } = chart;
+    if (!y) return;
+    const yZero = y.getPixelForValue(0);
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(left, yZero);
+    ctx.lineTo(right, yZero);
+    ctx.strokeStyle = "rgba(200,134,10,0.5)";
+    ctx.lineWidth   = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
+};
+
+async function loadMetrics() {
+  let data;
+  try {
+    const res = await fetch("/api/advanced-metrics?country=Kenya");
+    data = await res.json();
+  } catch (e) {
+    document.getElementById("regressionCallout").textContent = "Failed to load metrics.";
+    return;
+  }
+
+  // ── DECOUPLING CHART
+  if (data.decoupling && data.decoupling.length) {
+    const dec  = data.decoupling;
+    const vals = dec.map(d => d.decoupling_index);
+
+    new Chart(document.getElementById("decouplingChart"), {
+      type: "line",
+      plugins: [zeroLinePlugin],
+      data: {
+        labels: dec.map(d => d.year),
+        datasets: [{
+          data: vals,
+          borderColor: "#4a7c59",
+          backgroundColor: "rgba(74,124,89,0.07)",
+          borderWidth: 2,
+          pointRadius: 3.5,
+          pointBackgroundColor: vals.map(v => v >= 0 ? "#4a7c59" : "#b85c38"),
+          pointBorderColor:    vals.map(v => v >= 0 ? "#4a7c59" : "#b85c38"),
+          pointHoverRadius: 5,
+          fill: true,
+          tension: 0.35
+        }]
+      },
+      options: {
+        ...BASE_OPTS,
+        plugins: {
+          ...BASE_OPTS.plugins,
+          tooltip: {
+            ...BASE_OPTS.plugins.tooltip,
+            callbacks: {
+              title: ctx => `Year: ${ctx[0].label}`,
+              label: ctx => {
+                const v = ctx.parsed.y;
+                return ` ${v > 0 ? "+" : ""}${v.toFixed(2)} pp  —  ${v >= 0 ? "decoupled" : "coupled"}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: BASE_OPTS.scales.x,
+          y: { ...BASE_OPTS.scales.y, title: { display: true, text: "Percentage points", font: { family: "'DM Sans'", size: 10 }, color: "#7a7368" } }
+        }
+      }
+    });
+  }
+
+  // ── ELASTICITY CHART
+  if (data.elasticity && data.elasticity.length) {
+    const elas  = data.elasticity;
+    const eVals = elas.map(d => d.elasticity);
+
+    new Chart(document.getElementById("elasticityChart"), {
+      type: "line",
+      plugins: [zeroLinePlugin],
+      data: {
+        labels: elas.map(d => d.year),
+        datasets: [{
+          data: eVals,
+          borderColor: "#c8860a",
+          backgroundColor: "rgba(200,134,10,0.07)",
+          borderWidth: 2,
+          pointRadius: 3.5,
+          pointBackgroundColor: eVals.map(v => v < 1 ? "#4a7c59" : "#b85c38"),
+          pointBorderColor:    eVals.map(v => v < 1 ? "#4a7c59" : "#b85c38"),
+          pointHoverRadius: 5,
+          fill: true,
+          tension: 0.35
+        }]
+      },
+      options: {
+        ...BASE_OPTS,
+        plugins: {
+          ...BASE_OPTS.plugins,
+          tooltip: {
+            ...BASE_OPTS.plugins.tooltip,
+            callbacks: {
+              title: ctx => `Year: ${ctx[0].label}`,
+              label: ctx => {
+                const v = ctx.parsed.y;
+                const interp = v < 0 ? "strong decoupling" : v < 1 ? "relative decoupling" : "coupled";
+                return ` ε = ${v.toFixed(3)}  —  ${interp}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: BASE_OPTS.scales.x,
+          y: { ...BASE_OPTS.scales.y, title: { display: true, text: "Elasticity (ε)", font: { family: "'DM Sans'", size: 10 }, color: "#7a7368" } }
+        }
+      }
+    });
+  }
+
+  // ── REGRESSION CALLOUT
+  const regEl = document.getElementById("regressionCallout");
+  if (data.residual && data.residual.residual != null) {
+    const deviation = (Math.exp(data.residual.residual) - 1) * 100;
+    const dir    = deviation < 0 ? "less" : "more";
+    const colour = deviation < 0 ? "#4a7c59" : "#b85c38";
+    regEl.innerHTML =
+      `Kenya emits <strong style="color:${colour}">${Math.abs(deviation).toFixed(1)}% ${dir}</strong> CO₂ ` +
+      `than predicted for its income level, based on a log-linear regression across ` +
+      `<strong>${data.residual.n}</strong> countries ` +
+      `(R² = <strong>${data.residual.r2.toFixed(2)}</strong>, year = ${data.residual.year}). ` +
+      (deviation < 0
+        ? "A negative residual confirms structural carbon efficiency — Kenya's clean energy mix decouples emissions from GDP growth."
+        : "A positive residual suggests Kenya emits more than expected for its income level — worth monitoring as industrialisation continues.");
+  } else {
+    regEl.textContent = "Regression data unavailable for this year.";
+  }
+
+  // ── CAGR CARDS — computed from the same sources as Overview to guarantee consistency
+  // Uses: total CO₂ from /api/trends (same as Overview) + GDP per capita from /api/overview
+  try {
+    const [ovRes2, tRes2] = await Promise.all([
+      fetch("/api/overview"),
+      fetch("/api/trends?country=Kenya&start=2002&end=2022")
+    ]);
+    const ovData = await ovRes2.json();
+    const tData2 = await tRes2.json();
+
+    const allYears2  = ovData.years;
+    const allGdpPc2  = ovData.gdp_pc;
+    const gdpByYear2 = {};
+    allYears2.forEach((y, i) => { gdpByYear2[y] = allGdpPc2[i]; });
+
+    const years2   = tData2.years;
+    const co2Arr2  = tData2.co2;
+    const gdpArr2  = years2.map(y => gdpByYear2[y] ?? null);
+
+    const n2      = years2[years2.length - 1] - years2[0];
+    const co2C    = (Math.pow(co2Arr2[co2Arr2.length - 1] / co2Arr2[0], 1 / n2) - 1) * 100;
+    const gdpC    = (Math.pow(gdpArr2[gdpArr2.length - 1] / gdpArr2[0], 1 / n2) - 1) * 100;
+    const score   = gdpC - co2C;
+
+    document.getElementById("kpi_gdp_cagr").textContent         = `${gdpC > 0 ? "+" : ""}${gdpC.toFixed(2)}%`;
+    document.getElementById("kpi_co2_cagr").textContent         = `${co2C > 0 ? "+" : ""}${co2C.toFixed(2)}%`;
+    document.getElementById("kpi_decoupling_score").textContent = `${score > 0 ? "+" : ""}${score.toFixed(2)}pp`;
+
+    const labelEl     = document.getElementById("kpi_decoupling_label");
+    labelEl.className = "kpi-delta " + (score > 0 ? "down" : "up");
+    // Do NOT overwrite textContent — the formula label is set in HTML and must remain stable
+  } catch (e) {
+    console.warn("Could not load CAGR data for Methodology page:", e);
+  }
+}
+
+loadMetrics();
+</script>
+
+<!-- WHY DECOUPLING MATTERS / CONCEPTUAL FRAMEWORK -->
+<div class="section-label">Conceptual Framework</div>
+
+<div class="card">
+  <div class="card-title">Theoretical Foundations</div>
+  <div class="card-meta">Kaya Identity · Environmental Kuznets Curve · IPCC frameworks</div>
+
+  <div class="grid-3" style="margin-top:0.75rem; margin-bottom:0;">
+
+    <div style="padding-right:1rem; border-right:1px solid var(--border-soft);">
+      <div style="font-size:0.78rem; font-weight:500; color:var(--ink); margin-bottom:0.4rem;">Kaya Identity</div>
+      <div style="font-family:'DM Mono',monospace; font-size:0.72rem; color:var(--amber); background:var(--amber-light); padding:0.4rem 0.6rem; border-radius:var(--radius); margin-bottom:0.5rem; line-height:1.6;">
+        CO₂ = Pop × (GDP/Pop) × (E/GDP) × (CO₂/E)
+      </div>
+      <p style="font-size:0.76rem; color:var(--ink-mid); line-height:1.7; margin:0;">
+        Decomposes emissions into population, income, energy intensity, and carbon intensity of energy.
+        Useful for identifying which driver dominates Kenya's emissions trajectory.
+        This decomposition framework underpins the driver analysis used in the Africa comparison section.
+      </p>
+    </div>
+
+    <div style="padding:0 1rem; border-right:1px solid var(--border-soft);">
+      <div style="font-size:0.78rem; font-weight:500; color:var(--ink); margin-bottom:0.4rem;">Environmental Kuznets Curve</div>
+      <div style="font-family:'DM Mono',monospace; font-size:0.72rem; color:var(--amber); background:var(--amber-light); padding:0.4rem 0.6rem; border-radius:var(--radius); margin-bottom:0.5rem; line-height:1.6;">
+        Emissions ↑ then ↓ as income rises
+      </div>
+      <p style="font-size:0.76rem; color:var(--ink-mid); line-height:1.7; margin:0;">
+        Hypothesises that pollution first rises then falls as countries develop. Kenya's position on this curve —
+        still on the upward slope — is tested via the regression residual analysis.
+        The regression analysis tests Kenya's position relative to the expected income–emissions relationship implied by this framework.
+      </p>
+    </div>
+
+    <div style="padding-left:1rem;">
+      <div style="font-size:0.78rem; font-weight:500; color:var(--ink); margin-bottom:0.4rem;">IPCC Carbon Intensity</div>
+      <div style="font-family:'DM Mono',monospace; font-size:0.72rem; color:var(--amber); background:var(--amber-light); padding:0.4rem 0.6rem; border-radius:var(--radius); margin-bottom:0.5rem; line-height:1.6;">
+        Intensity = CO₂ / GDP
+      </div>
+      <p style="font-size:0.76rem; color:var(--ink-mid); line-height:1.7; margin:0;">
+        IPCC mitigation scenarios use carbon intensity as a key tracking metric. Falling intensity
+        alongside rising GDP is the definition of relative decoupling used in this dashboard.
+      </p>
+    </div>
+
+  </div>
+</div>
+
+<!-- REFERENCES (kept from original) -->
+<div class="section-label" id="references">References</div>
+
+<div class="card">
+  <div class="card-title">Data &amp; Literature</div>
+  <div class="card-meta">primary sources · methodological references</div>
+  <ul class="doc-list" style="margin-top:0.25rem;">
+    <li><strong>Our World in Data</strong> - CO₂ and Greenhouse Gas Emissions dataset. <em>ourworldindata.org/co2-emissions</em></li>
+    <li><strong>Kaya, Y. &amp; Yokobori, K.</strong> (1997). Environment, Energy, and Economy: Strategies for Sustainability. United Nations University Press.</li>
+    <li><strong>Grossman, G. &amp; Krueger, A.</strong> (1995). Economic Growth and the Environment. <em>Quarterly Journal of Economics, 110(2).</em></li>
+    <li><strong>IPCC</strong> (2022). Mitigation of Climate Change - Working Group III Contribution to the Sixth Assessment Report.</li>
+  </ul>
+</div>
+
+<style>
+  .doc-list {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+  .doc-list li {
+    font-size: 0.8rem;
+    color: var(--ink-mid);
+    line-height: 1.65;
+    padding-left: 1rem;
+    position: relative;
+  }
+  .doc-list li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--ink-faint);
+    font-size: 0.72rem;
+  }
+</style>
+
+{% endblock %}

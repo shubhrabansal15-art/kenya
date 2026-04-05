@@ -1,0 +1,349 @@
+{% extends "base.html" %}
+{% block title %}Emissions Trends{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <h1>Emissions Trends</h1>
+  <p class="subtitle">Time-series analysis of Kenya's CO₂ emissions and per-capita trends across a selectable year range.</p>
+</div>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+
+  <div class="filter-group">
+    <span class="filter-label">Start Year</span>
+    <input id="startSlider" type="range" min="2002" max="2022" value="2002" style="width:130px; accent-color:#c8860a;">
+  </div>
+
+  <div style="display:flex; align-items:flex-end; padding-bottom:2px;">
+    <span id="rangeLabel" style="font-family:'DM Mono',monospace; font-size:0.82rem; color:var(--ink); background:var(--amber-light); border:1px solid var(--amber-soft); border-radius:var(--radius); padding:0.3rem 0.75rem;">
+      2002 → 2022
+    </span>
+  </div>
+
+  <div class="filter-group">
+    <span class="filter-label">End Year</span>
+    <input id="endSlider" type="range" min="2002" max="2022" value="2022" style="width:130px; accent-color:#c8860a;">
+  </div>
+
+  <div class="filter-group">
+    <span class="filter-label">Chart Type</span>
+    <select id="chartType">
+      <option value="line">Line</option>
+      <option value="bar">Bar</option>
+    </select>
+  </div>
+
+</div>
+
+<!-- TOTAL EMISSIONS -->
+<div class="section-label">Total Emissions</div>
+
+<div class="card">
+  <div class="card-title">Total CO₂ Emissions - Kenya</div>
+  <div class="card-meta" id="totalMeta">million tonnes CO₂ · annual · Our World in Data </div>
+  <div class="chart-wrap short">
+    <canvas id="totalChart"></canvas>
+  </div>
+  <p class="card-subtitle">
+    Kenya's total CO₂ output has grown steadily, driven primarily by population growth,
+    expanding transport infrastructure and increased energy demand. Despite this rise,
+    absolute volumes remain low by global standards — Kenya contributes under 0.1% of
+    global emissions.
+  </p>
+  <div id="totalInsight" class="insight-callout">Loading insight…</div>
+</div>
+
+<!-- PER CAPITA -->
+<div class="section-label">Per Capita Emissions</div>
+
+<div class="card">
+  <div class="card-title">CO₂ per Capita - Kenya</div>
+  <div class="card-meta" id="pcMeta">tonnes CO₂ per person · annual · Our World in Data </div>
+  <div class="chart-wrap short">
+    <canvas id="pcChart"></canvas>
+  </div>
+  <p class="card-subtitle">
+    Per-capita emissions reveal a more nuanced picture than totals alone. Kenya's figure
+    has remained remarkably stable — well below the global average of ~4.7 t/person —
+    reflecting the clean electricity mix (dominated by geothermal and hydro) and a largely
+    rural, low-consumption economy.
+  </p>
+  <div id="pcInsight" class="insight-callout">Loading insight…</div>
+</div>
+
+<style>
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    background: var(--cream-dark);
+    border-radius: 2px;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--amber);
+    border: 2px solid var(--warm-white);
+    box-shadow: 0 1px 4px rgba(30,26,20,0.18);
+    cursor: pointer;
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--amber);
+    border: 2px solid var(--warm-white);
+    cursor: pointer;
+  }
+
+  .insight-callout {
+    margin-top: 0.85rem;
+    padding: 0.75rem 1rem;
+    background: linear-gradient(135deg, var(--amber-light) 0%, var(--terra-light) 100%);
+    border: 1px solid var(--amber-soft);
+    border-radius: var(--radius);
+    font-size: 0.78rem;
+    color: var(--ink-mid);
+    line-height: 1.65;
+    font-style: italic;
+    min-height: 2.5rem;
+    transition: opacity 0.2s;
+  }
+
+  .insight-callout.loading {
+    opacity: 0.45;
+  }
+</style>
+
+<script>
+const allYears = {{ years | tojson }};
+const allCo2   = {{ co2 | tojson }};
+const allCo2pc = {{ co2_per_capita | tojson }};
+
+let totalChart, pcChart;
+
+const startSlider = document.getElementById("startSlider");
+const endSlider   = document.getElementById("endSlider");
+const rangeLabel  = document.getElementById("rangeLabel");
+const chartType   = document.getElementById("chartType");
+
+const BASE_OPTS = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      backgroundColor: "#fdfbf8",
+      titleColor: "#1e1a14",
+      bodyColor: "#4a4539",
+      borderColor: "#ddd8cf",
+      borderWidth: 1,
+      padding: 10,
+      titleFont: { family: "'Playfair Display', serif", size: 12 },
+      bodyFont:  { family: "'DM Sans', sans-serif", size: 11 }
+    }
+  },
+  scales: {
+    x: {
+      ticks: { font: { family: "'DM Sans', sans-serif", size: 10 }, color: "#7a7368", maxTicksLimit: 10 },
+      grid:  { color: "rgba(180,168,152,0.15)" },
+      border:{ color: "#ddd8cf" }
+    },
+    y: {
+      ticks: { font: { family: "'DM Sans', sans-serif", size: 10 }, color: "#7a7368" },
+      grid:  { color: "rgba(180,168,152,0.15)" },
+      border:{ color: "#ddd8cf" }
+    }
+  }
+};
+
+function filterData(start, end) {
+  const years = [], co2 = [], co2pc = [];
+  for (let i = 0; i < allYears.length; i++) {
+    if (allYears[i] >= start && allYears[i] <= end) {
+      years.push(allYears[i]);
+      co2.push(allCo2[i]);
+      co2pc.push(allCo2pc[i]);
+    }
+  }
+  return { years, co2, co2pc };
+}
+
+function getBarBg(color, count) {
+  return Array(count).fill(color);
+}
+
+function renderCharts(years, co2, co2pc) {
+  if (totalChart) totalChart.destroy();
+  if (pcChart)    pcChart.destroy();
+
+  const type = chartType.value;
+  const isBar = type === "bar";
+
+  // update meta labels
+  document.getElementById("totalMeta").textContent =
+    `million tonnes CO₂ · ${years[0]} – ${years[years.length - 1]} · Our World in Data`;
+  document.getElementById("pcMeta").textContent =
+    `tonnes CO₂ per person · ${years[0]} – ${years[years.length - 1]} · Our World in Data`;
+
+  totalChart = new Chart(document.getElementById("totalChart"), {
+    type,
+    data: {
+      labels: years,
+      datasets: [{
+        label: "Total CO₂ (Mt)",
+        data: co2,
+        borderColor: "#4a7c59",
+        backgroundColor: isBar
+          ? "rgba(74,124,89,0.65)"
+          : "rgba(74,124,89,0.08)",
+        borderWidth: isBar ? 0 : 2,
+        borderRadius: isBar ? 2 : 0,
+        pointRadius: isBar ? 0 : 3,
+        pointBackgroundColor: "#4a7c59",
+        pointHoverRadius: isBar ? 0 : 5,
+        fill: !isBar,
+        tension: 0.35
+      }]
+    },
+    options: {
+      ...BASE_OPTS,
+      plugins: {
+        ...BASE_OPTS.plugins,
+        tooltip: {
+          ...BASE_OPTS.plugins.tooltip,
+          callbacks: {
+            title: ctx => `Year: ${ctx[0].label}`,
+            label: ctx => ` ${ctx.parsed.y.toFixed(2)} Mt CO₂`
+          }
+        }
+      },
+      scales: {
+        x: BASE_OPTS.scales.x,
+        y: {
+          ...BASE_OPTS.scales.y,
+          title: {
+            display: true,
+            text: "Million tonnes CO₂",
+            font: { family: "'DM Sans'", size: 10 },
+            color: "#7a7368"
+          }
+        }
+      }
+    }
+  });
+
+  pcChart = new Chart(document.getElementById("pcChart"), {
+    type,
+    data: {
+      labels: years,
+      datasets: [{
+        label: "CO₂ per capita (t)",
+        data: co2pc,
+        borderColor: "#c8860a",
+        backgroundColor: isBar
+          ? "rgba(200,134,10,0.65)"
+          : "rgba(200,134,10,0.08)",
+        borderWidth: isBar ? 0 : 2,
+        borderRadius: isBar ? 2 : 0,
+        pointRadius: isBar ? 0 : 3,
+        pointBackgroundColor: "#c8860a",
+        pointHoverRadius: isBar ? 0 : 5,
+        fill: !isBar,
+        tension: 0.35
+      }]
+    },
+    options: {
+      ...BASE_OPTS,
+      plugins: {
+        ...BASE_OPTS.plugins,
+        tooltip: {
+          ...BASE_OPTS.plugins.tooltip,
+          callbacks: {
+            title: ctx => `Year: ${ctx[0].label}`,
+            label: ctx => ` ${ctx.parsed.y.toFixed(3)} t/person`
+          }
+        }
+      },
+      scales: {
+        x: BASE_OPTS.scales.x,
+        y: {
+          ...BASE_OPTS.scales.y,
+          title: {
+            display: true,
+            text: "Tonnes per person",
+            font: { family: "'DM Sans'", size: 10 },
+            color: "#7a7368"
+          }
+        }
+      }
+    }
+  });
+}
+
+let insightTimer = null;
+
+async function fetchInsight(type) {
+  const start = startSlider.value;
+  const end   = endSlider.value;
+  const el    = document.getElementById(type === "total" ? "totalInsight" : "pcInsight");
+
+  el.classList.add("loading");
+  el.textContent = "Generating insight…";
+
+  try {
+    const res  = await fetch(`/api/insight?chart=${type}&start=${start}&end=${end}`);
+    const data = await res.json();
+    el.textContent = data.insight;
+  } catch {
+    el.textContent = "Insight unavailable.";
+  } finally {
+    el.classList.remove("loading");
+  }
+}
+
+function updateCharts() {
+  let start = +startSlider.value;
+  let end   = +endSlider.value;
+
+  if (start > end) {
+    if (this === startSlider) { endSlider.value = start; end = start; }
+    else                      { startSlider.value = end; start = end; }
+  }
+
+  rangeLabel.textContent = `${start} → ${end}`;
+
+  const d = filterData(start, end);
+  renderCharts(d.years, d.co2, d.co2pc);
+
+  clearTimeout(insightTimer);
+  insightTimer = setTimeout(() => {
+    fetchInsight("total");
+    fetchInsight("percapita");
+  }, 600);
+}
+
+startSlider.addEventListener("input", updateCharts);
+endSlider.addEventListener("input", updateCharts);
+chartType.addEventListener("change", () => {
+  const start = +startSlider.value;
+  const end   = +endSlider.value;
+  const d = filterData(start, end);
+  renderCharts(d.years, d.co2, d.co2pc);
+});
+
+// Initial render
+const initial = filterData(2002, 2022);
+renderCharts(initial.years, initial.co2, initial.co2pc);
+fetchInsight("total");
+fetchInsight("percapita");
+</script>
+
+{% endblock %}

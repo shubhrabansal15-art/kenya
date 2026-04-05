@@ -1,0 +1,451 @@
+{% extends "base.html" %}
+{% block title %}Carbon Inequality{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <h1>Carbon Inequality Analysis</h1>
+  <p class="subtitle">Global positioning of Kenya's emissions relative to economic development and peer nations.</p>
+</div>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <div class="filter-group">
+    <span class="filter-label">Year</span>
+    <input id="yearInput" type="number" value="{{ year }}" min="{{ year_min }}" max="{{ year_max }}" style="width:90px;">
+  </div>
+  <button class="btn btn-primary" id="yearRefresh">Update</button>
+  <p id="errorMsg" class="error-msg"></p>
+</div>
+
+<!-- SCATTER: FLAGSHIP -->
+<div class="section-label">Development vs Emissions</div>
+
+<div class="card">
+  <div class="card-title">Income Level vs CO₂ Emissions</div>
+  <div class="card-meta">GDP per capita (USD) · CO₂ per capita (tonnes) · bubble size = population</div>
+  <div class="chart-wrap tall">
+    <canvas id="scatterChart"></canvas>
+  </div>
+  <p class="card-subtitle">
+    Each bubble represents a country. The dashed line shows the global trend: expected CO₂ emissions at each income level.
+    Kenya (dark green) sits <em>clearly below</em> the trend line, visually proving its structural efficiency advantage.
+    This means Kenya emits less CO₂ than predicted for its GDP—driven by renewable electricity and low industrialisation.
+  </p>
+</div>
+
+<!-- REGRESSION -->
+<div class="section-label">Regression Analysis</div>
+
+<div class="callout" id="regressionText">Loading regression…</div>
+
+<!-- CARBON GAP + TOP EMITTERS -->
+<div class="section-label">Comparative Metrics</div>
+
+<div class="grid-2">
+
+  <div class="card">
+    <div class="card-title">Carbon Gap — Kenya vs World Average</div>
+    <div class="card-meta">CO₂ per capita difference (tonnes/person) · annual</div>
+    <div class="chart-wrap">
+      <canvas id="gapChart"></canvas>
+    </div>
+    <p class="card-subtitle">
+      Green bars (below zero) show years where Kenya emits <em>less</em> than the global average per person.
+      This gap has remained consistently negative, underscoring Kenya's low-carbon development path
+      despite rising total emissions from population growth.
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Top 10 Global Emitters</div>
+    <div class="card-meta">Total CO₂ (megatonnes) · selected year</div>
+    <div class="chart-wrap">
+      <canvas id="topChart"></canvas>
+    </div>
+    <p class="card-subtitle">
+      The top emitters account for the vast majority of global CO₂. Kenya's total emissions are a
+      fraction of these nations, yet Kenya bears disproportionate climate risk — illustrating the
+      core inequity of climate responsibility vs. climate vulnerability.
+    </p>
+  </div>
+
+</div>
+
+<script>
+let charts = {};
+
+function destroyCharts() {
+  Object.values(charts).forEach(c => c.destroy());
+  charts = {};
+}
+
+function showError(msg) {
+  const el = document.getElementById("errorMsg");
+  el.textContent = msg;
+  el.style.display = "block";
+}
+
+function clearError() {
+  const el = document.getElementById("errorMsg");
+  el.textContent = "";
+  el.style.display = "none";
+}
+
+const PALETTE = {
+  kenya:    "#4a7c59",
+  amber:    "#c8860a",
+  terra:    "#b85c38",
+  slate:    "#7a8694",
+  positive: "#4a7c59",
+  negative: "#b85c38",
+  neutral:  "rgba(180,168,152,0.5)"
+};
+
+const BASE_CHART_OPTS = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      labels: {
+        font: { family: "'DM Sans', sans-serif", size: 11 },
+        color: "#4a4539",
+        boxWidth: 10,
+        padding: 12
+      }
+    },
+    tooltip: {
+      backgroundColor: "#fdfbf8",
+      titleColor: "#1e1a14",
+      bodyColor: "#4a4539",
+      borderColor: "#ddd8cf",
+      borderWidth: 1,
+      padding: 10,
+      titleFont: { family: "'Playfair Display', serif", size: 12 },
+      bodyFont: { family: "'DM Sans', sans-serif", size: 11 }
+    }
+  },
+  scales: {
+    x: {
+      ticks: { font: { family: "'DM Sans', sans-serif", size: 10 }, color: "#7a7368" },
+      grid: { color: "rgba(180,168,152,0.15)" },
+      border: { color: "#ddd8cf" }
+    },
+    y: {
+      ticks: { font: { family: "'DM Sans', sans-serif", size: 10 }, color: "#7a7368" },
+      grid: { color: "rgba(180,168,152,0.15)" },
+      border: { color: "#ddd8cf" }
+    }
+  }
+};
+
+function renderCharts(data) {
+  destroyCharts();
+
+  // ── SCATTER
+  if (data.scatter && data.scatter.length) {
+    charts.scatter = new Chart(document.getElementById("scatterChart"), {
+      type: "bubble",
+      data: {
+        datasets: [{
+          label: "Countries",
+          data: data.scatter.map(d => ({
+            x: d.gdp_per_capita,
+            y: d.co2_per_capita,
+            // Change 4: Kenya marker enlarged to r:16 (was Math.max(5,…/2200))
+            r: d.country === "Kenya"
+              ? 16
+              : Math.max(5, Math.sqrt(d.population) / 2200),
+            country: d.country
+          })),
+          backgroundColor: data.scatter.map(d =>
+            d.country === "Kenya"
+              ? PALETTE.kenya
+              : d.country === "India"
+              ? PALETTE.amber
+              : PALETTE.neutral
+          ),
+          borderColor: data.scatter.map(d =>
+            d.country === "Kenya" ? "#2d6a4f"
+            : d.country === "India" ? "#a56e08"
+            : "rgba(150,138,124,0.3)"
+          ),
+          borderWidth: data.scatter.map(d => d.country === "Kenya" ? 2.5 : 1.5)
+        }]
+      },
+      options: {
+        ...BASE_CHART_OPTS,
+        plugins: {
+          ...BASE_CHART_OPTS.plugins,
+          tooltip: {
+            ...BASE_CHART_OPTS.plugins.tooltip,
+            callbacks: {
+              label: ctx => {
+                const d = ctx.raw;
+                return [
+                  `${d.country}`,
+                  `GDP: $${Math.round(d.x).toLocaleString()}`,
+                  `CO₂: ${d.y.toFixed(2)} t/person`
+                ];
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            ...BASE_CHART_OPTS.scales.x,
+            title: { display: true, text: "GDP per capita (USD)", font: { family: "'DM Sans'", size: 10 }, color: "#7a7368" }
+          },
+          y: {
+            ...BASE_CHART_OPTS.scales.y,
+            title: { display: true, text: "CO₂ per capita (tonnes)", font: { family: "'DM Sans'", size: 10 }, color: "#7a7368" }
+          }
+        }
+      },
+      plugins: [{
+        // Regression trend line
+        id: "regressionTrendLine",
+        afterDraw(chart) {
+          if (!data.residual || !data.residual.slope) return;
+          const slope     = data.residual.slope;
+          const intercept = data.residual.intercept;
+          const xAxis     = chart.scales.x;
+          const yAxis     = chart.scales.y;
+          const ctx       = chart.ctx;
+          const gdps      = data.scatter.map(d => d.gdp_per_capita).filter(g => g > 0);
+          const minGdp    = Math.min(...gdps);
+          const maxGdp    = Math.max(...gdps);
+
+          ctx.save();
+          ctx.strokeStyle = PALETTE.slate;
+          ctx.lineWidth   = 2;
+          ctx.setLineDash([5, 4]);
+          ctx.beginPath();
+          let first = true;
+          for (let i = 0; i <= 50; i++) {
+            const gdp    = minGdp + (maxGdp - minGdp) * (i / 50);
+            if (gdp > 0) {
+              const logGdp = Math.log(gdp);
+              const logCo2 = slope * logGdp + intercept;
+              const co2    = Math.exp(logCo2);
+              const px     = xAxis.getPixelForValue(gdp);
+              const py     = yAxis.getPixelForValue(co2);
+              if (first) { ctx.moveTo(px, py); first = false; }
+              else          ctx.lineTo(px, py);
+            }
+          }
+          ctx.stroke();
+          ctx.restore();
+
+          chart.lineData = { minGdp, maxGdp, slope, intercept, xAxis, yAxis };
+        }
+      }, {
+        // Change 4: Kenya annotation label below the trend line
+        id: "kenyaAnnotation",
+        afterDraw(chart) {
+          const kenya = data.scatter.find(d => d.country === "Kenya");
+          if (!kenya || !data.residual || !data.residual.slope) return;
+
+          const xAxis = chart.scales.x;
+          const yAxis = chart.scales.y;
+          const ctx   = chart.ctx;
+
+          const px = xAxis.getPixelForValue(kenya.gdp_per_capita);
+          const py = yAxis.getPixelForValue(kenya.co2_per_capita);
+
+          // Expected emissions for Kenya's GDP
+          const logGdp    = Math.log(kenya.gdp_per_capita);
+          const logCo2Exp = data.residual.slope * logGdp + data.residual.intercept;
+          const co2Exp    = Math.exp(logCo2Exp);
+          const pyExp     = yAxis.getPixelForValue(co2Exp);
+
+          // Dashed vertical line from Kenya bubble up to trend line
+          ctx.save();
+          ctx.setLineDash([3, 3]);
+          ctx.strokeStyle = "#4a7c59";
+          ctx.lineWidth   = 1.2;
+          ctx.beginPath();
+          ctx.moveTo(px, py - 16);    // top of Kenya bubble
+          ctx.lineTo(px, pyExp);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          // Annotation label
+          const label   = "Below expected emissions";
+          const subLabel = "for its income level";
+          const padding  = 7;
+          const boxW     = 164;
+          const boxH     = 38;
+          // Position label to the right of Kenya, centred on midpoint between bubble and trend line
+          const midY    = (py - 16 + pyExp) / 2;
+          const labelX  = px + 18;
+          const labelY  = Math.max(midY - boxH / 2, chart.chartArea.top + 4);
+
+          ctx.fillStyle   = "rgba(253,251,248,0.94)";
+          ctx.strokeStyle = "#4a7c59";
+          ctx.lineWidth   = 1;
+          ctx.fillRect(labelX, labelY, boxW, boxH);
+          ctx.strokeRect(labelX, labelY, boxW, boxH);
+
+          ctx.fillStyle = "#4a7c59";
+          ctx.font      = "bold 10px 'DM Sans', sans-serif";
+          ctx.fillText(label, labelX + padding, labelY + padding + 10);
+          ctx.fillStyle = "#7a7368";
+          ctx.font      = "10px 'DM Sans', sans-serif";
+          ctx.fillText(subLabel, labelX + padding, labelY + padding + 24);
+          ctx.restore();
+        }
+      }, {
+        // Hover tooltip on trend line
+        id: "lineHoverTooltip",
+        afterEvent(chart, args) {
+          if (!data.residual || !data.residual.slope || !chart.lineData) return;
+          const event = args.event;
+          if (event.type !== "mousemove") { chart.trendTooltip = null; return; }
+          const canvasPos = Chart.helpers.getRelativePosition(event.native, chart);
+          if (!canvasPos) return;
+          if (chart.tooltip._active && chart.tooltip._active.length > 0) { chart.trendTooltip = null; return; }
+          const { minGdp, maxGdp, slope, intercept, xAxis, yAxis } = chart.lineData;
+          let minDist = Infinity, closestGdp = null, closestCo2 = null;
+          for (let i = 0; i <= 50; i++) {
+            const gdp = minGdp + (maxGdp - minGdp) * (i / 50);
+            if (gdp > 0) {
+              const co2 = Math.exp(slope * Math.log(gdp) + intercept);
+              const px  = xAxis.getPixelForValue(gdp);
+              const py  = yAxis.getPixelForValue(co2);
+              const d   = Math.sqrt((canvasPos.x - px) ** 2 + (canvasPos.y - py) ** 2);
+              if (d < minDist) { minDist = d; closestGdp = gdp; closestCo2 = co2; }
+            }
+          }
+          chart.trendTooltip = (minDist < 12 && closestGdp) ? { x: canvasPos.x, y: canvasPos.y, gdp: closestGdp, co2: closestCo2 } : null;
+        }
+      }, {
+        id: "drawTrendTooltip",
+        afterDraw(chart) {
+          if (!chart.trendTooltip) return;
+          const { x, y, gdp, co2 } = chart.trendTooltip;
+          const ctx = chart.ctx;
+          const text1 = "Global Trend";
+          const text2 = `Expected CO₂: ${co2.toFixed(2)} t/person`;
+          const text3 = `GDP: $${Math.round(gdp).toLocaleString()}`;
+          const pad   = 10, lh = 16;
+          const w     = Math.max(160, Math.max(ctx.measureText(text2).width, ctx.measureText(text3).width) + pad * 2);
+          const h     = pad * 2 + lh * 3;
+          const bx    = Math.min(x + 10, chart.width - w - 10);
+          const by    = Math.max(y - h - 10, 10);
+          ctx.save();
+          ctx.fillStyle   = "#fdfbf8"; ctx.strokeStyle = "#ddd8cf"; ctx.lineWidth = 1;
+          ctx.fillRect(bx, by, w, h); ctx.strokeRect(bx, by, w, h);
+          ctx.fillStyle   = "#1e1a14"; ctx.font = "bold 12px 'Playfair Display', serif";
+          ctx.fillText(text1, bx + pad, by + pad + 12);
+          ctx.fillStyle   = "#4a4539"; ctx.font = "11px 'DM Sans', sans-serif";
+          ctx.fillText(text2, bx + pad, by + pad + 28);
+          ctx.fillText(text3, bx + pad, by + pad + 44);
+          ctx.restore();
+        }
+      }]
+    });
+  }
+
+  // ── REGRESSION CALLOUT
+  const regressionEl = document.getElementById("regressionText");
+  if (data.residual && data.residual.residual != null) {
+    const deviation = (Math.exp(data.residual.residual) - 1) * 100;
+    const dir    = deviation < 0 ? "less" : "more";
+    const colour = deviation < 0 ? "#4a7c59" : "#b85c38";
+    regressionEl.innerHTML =
+      `Kenya emits <strong style="color:${colour}">${Math.abs(deviation).toFixed(1)}% ${dir}</strong> CO₂ ` +
+      `than predicted for its income level, based on a log-linear regression across ${data.residual.n} countries ` +
+      `(R² = ${data.residual.r2.toFixed(2)}). A negative residual confirms structural carbon efficiency — ` +
+      `Kenya's clean energy mix decouples emissions from GDP growth.`;
+  } else {
+    regressionEl.textContent = "Regression data unavailable for this year.";
+  }
+
+  // ── GAP CHART
+  if (data.gap && data.gap.gap && data.gap.gap.length) {
+    const gapArr = data.gap.gap;
+    charts.gap = new Chart(document.getElementById("gapChart"), {
+      type: "bar",
+      data: {
+        labels: gapArr.map(d => d.year),
+        datasets: [{
+          label: "Kenya − World avg",
+          data: gapArr.map(d => d.value),
+          backgroundColor: gapArr.map(d => d.value < 0 ? "rgba(74,124,89,0.7)" : "rgba(184,92,56,0.7)"),
+          borderColor:     gapArr.map(d => d.value < 0 ? "#4a7c59"             : "#b85c38"),
+          borderWidth: 1, borderRadius: 2
+        }]
+      },
+      options: {
+        ...BASE_CHART_OPTS,
+        plugins: {
+          ...BASE_CHART_OPTS.plugins,
+          legend: { display: false },
+          tooltip: {
+            ...BASE_CHART_OPTS.plugins.tooltip,
+            callbacks: { label: ctx => `${ctx.parsed.y > 0 ? "+" : ""}${ctx.parsed.y.toFixed(3)} t CO₂/capita` }
+          }
+        },
+        scales: {
+          x: { ...BASE_CHART_OPTS.scales.x, ticks: { ...BASE_CHART_OPTS.scales.x.ticks, maxTicksLimit: 8 } },
+          y: { ...BASE_CHART_OPTS.scales.y, title: { display: true, text: "t CO₂/capita", font: { family: "'DM Sans'", size: 10 }, color: "#7a7368" } }
+        }
+      }
+    });
+  } else {
+    document.getElementById("gapChart").parentElement.innerHTML =
+      "<p style='font-size:0.78rem;color:#7a7368;padding:1rem 0;'>Gap data unavailable.</p>";
+  }
+
+  // ── TOP EMITTERS
+  if (data.top && data.top.length) {
+    charts.top = new Chart(document.getElementById("topChart"), {
+      type: "bar",
+      data: {
+        labels: data.top.map(d => d.country),
+        datasets: [{
+          label: "Total CO₂ (Mt)",
+          data: data.top.map(d => d.co2),
+          backgroundColor: data.top.map(d => d.country === "Kenya" ? PALETTE.kenya : "rgba(180,168,152,0.55)"),
+          borderColor:     data.top.map(d => d.country === "Kenya" ? "#2d6a4f"     : "rgba(150,138,124,0.4)"),
+          borderWidth: 1, borderRadius: 2
+        }]
+      },
+      options: {
+        ...BASE_CHART_OPTS,
+        indexAxis: "y",
+        plugins: { ...BASE_CHART_OPTS.plugins, legend: { display: false } },
+        scales: {
+          x: { ...BASE_CHART_OPTS.scales.x, title: { display: true, text: "CO₂ (Mt)", font: { family: "'DM Sans'", size: 10 }, color: "#7a7368" } },
+          y: { ...BASE_CHART_OPTS.scales.y }
+        }
+      }
+    });
+  }
+}
+
+async function loadYear(year) {
+  clearError();
+  try {
+    const res = await fetch(`/api/inequality?year=${year}`);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.description || `Server error ${res.status}`);
+    }
+    const data = await res.json();
+    renderCharts(data);
+  } catch (err) {
+    console.error("Failed to load inequality data:", err);
+    showError(`Failed to load data: ${err.message}`);
+  }
+}
+
+document.getElementById("yearRefresh").onclick = () => {
+  loadYear(document.getElementById("yearInput").value);
+};
+
+loadYear({{ year }});
+</script>
+
+{% endblock %}

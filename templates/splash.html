@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kenya Climate Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:      #f7f4ef;
+      --warm-white: #fdfbf8;
+      --amber:      #c8860a;
+      --amber-soft: #f5e6c8;
+      --ink:        #1e1a14;
+      --ink-mid:    #4a4539;
+      --ink-soft:   #7a7368;
+      --ink-faint:  #b0a898;
+      --border:     #ddd8cf;
+
+      /* Kenya flag colours */
+      --flag-black:  #1a1a1a;
+      --flag-red:    #bb0000;
+      --flag-green:  #006600;
+      --flag-white:  #f5f0e8;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      overflow: hidden;
+    }
+
+    /* ── SPLASH WRAPPER ── */
+    #splash {
+      position: fixed;
+      inset: 0;
+      background: var(--ink);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      z-index: 10;
+      opacity: 1;
+      transition: opacity 2.5s ease;
+    }
+
+    #splash.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* ── FLAG ── */
+    .flag-wrap {
+      opacity: 0;
+      transform: translateY(18px) scale(0.96);
+      transition: opacity 2.5s ease, transform 2.5s ease;
+    }
+
+    .flag-wrap.visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    .kenya-flag {
+      width: 220px;
+      height: 147px;
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    /* Three horizontal stripes */
+    .flag-stripe-black { position: absolute; top: 0;       left: 0; right: 0; height: 33.33%; background: var(--flag-black); }
+    .flag-stripe-red   { position: absolute; top: 33.33%;  left: 0; right: 0; height: 33.33%; background: var(--flag-red);   }
+    .flag-stripe-green { position: absolute; top: 66.66%;  left: 0; right: 0; height: 100%;   background: var(--flag-green); }
+
+    /* White border lines on red stripe */
+    .flag-white-top    { position: absolute; top: calc(33.33% - 4px); left: 0; right: 0; height: 8px; background: var(--flag-white); }
+    .flag-white-bottom { position: absolute; top: calc(66.66% - 4px); left: 0; right: 0; height: 8px; background: var(--flag-white); }
+
+    /* Maasai shield and spears — centred SVG */
+    .flag-emblem {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 66px;
+      height: 88px;
+    }
+
+    /* ── TITLE BLOCK ── */
+    .splash-title {
+      margin-top: 2.5rem;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.6s ease 0.2s, transform 0.6s ease 0.2s;
+    }
+
+    .splash-title.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .splash-title h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-weight: 400;
+      color: var(--flag-white);
+      letter-spacing: 0.02em;
+      line-height: 1.15;
+    }
+
+    .splash-title h1 em {
+      font-style: italic;
+      color: #e8c87a;
+    }
+
+    .splash-title p {
+      margin-top: 0.6rem;
+      font-size: 0.78rem;
+      font-weight: 300;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+    }
+
+    /* ── PROGRESS BAR ── */
+    .progress-wrap {
+      margin-top: 3rem;
+      width: 180px;
+      opacity: 0;
+      transition: opacity 0.4s ease 0.5s;
+    }
+
+    .progress-wrap.visible { opacity: 1; }
+
+    .progress-track {
+      width: 100%;
+      height: 1px;
+      background: rgba(255,255,255,0.40);
+      border-radius: 1px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--amber);
+      border-radius: 1px;
+      width: 0%;
+      transition: width 2.4s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    .progress-fill.run { width: 100%; }
+
+    .progress-label {
+      margin-top: 0.6rem;
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+      text-align: center;
+    }
+
+    /* ── CONTENT PAGE (hidden at first) ── */
+    #main-content {
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+
+    #main-content.visible { opacity: 1; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ SPLASH ═══════════════════════════════ -->
+<div id="splash">
+
+  <!-- Kenya flag -->
+  <div class="flag-wrap" id="flagWrap">
+    <div class="kenya-flag">
+      <div class="flag-stripe-black"></div>
+      <div class="flag-stripe-red"></div>
+      <div class="flag-stripe-green"></div>
+      <div class="flag-white-top"></div>
+      <div class="flag-white-bottom"></div>
+
+      <!-- Maasai shield + crossed spears (inline SVG) -->
+      <svg class="flag-emblem" viewBox="0 0 66 88" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Crossed spears (behind shield) -->
+        <line x1="8"  y1="4"  x2="58" y2="84" stroke="#f5f0e8" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="58" y1="4"  x2="8"  y2="84" stroke="#f5f0e8" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- Spear tips -->
+        <polygon points="8,4 4,0 12,0"   fill="#f5f0e8"/>
+        <polygon points="58,4 54,0 62,0"  fill="#f5f0e8"/>
+        <polygon points="8,84 4,88 12,88" fill="#f5f0e8"/>
+        <polygon points="58,84 54,88 62,88" fill="#f5f0e8"/>
+
+        <!-- Shield body -->
+        <path d="M33 6 C50 10 56 28 56 44 C56 60 50 76 33 82 C16 76 10 60 10 44 C10 28 16 10 33 6 Z"
+              fill="#bb0000" stroke="#f5f0e8" stroke-width="1.5"/>
+        <!-- Shield inner pattern strips -->
+        <path d="M33 10 C46 14 51 28 51 44 C51 58 46 73 33 78 C20 73 15 58 15 44 C15 28 20 14 33 10 Z"
+              fill="#1a1a1a"/>
+        <path d="M33 16 C43 20 47 32 47 44 C47 56 43 68 33 72 C23 68 19 56 19 44 C19 32 23 20 33 16 Z"
+              fill="#bb0000"/>
+        <!-- Shield centre white oval -->
+        <ellipse cx="33" cy="44" rx="7" ry="11" fill="#f5f0e8"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Title -->
+  <div class="splash-title" id="splashTitle">
+    <h1>Kenya <em>Climate</em></h1>
+    <p>Emissions · Growth · Inequality</p>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-label">Loading dashboard</div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════ REDIRECT ══════════════════════════════ -->
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    const flagWrap    = document.getElementById('flagWrap');
+    const splashTitle = document.getElementById('splashTitle');
+    const progressWrap= document.getElementById('progressWrap');
+    const progressFill= document.getElementById('progressFill');
+    const splash      = document.getElementById('splash');
+
+    // 1. Flag flies in
+    setTimeout(() => flagWrap.classList.add('visible'), 120);
+
+    // 2. Title fades in
+    setTimeout(() => splashTitle.classList.add('visible'), 400);
+
+    // 3. Progress bar appears and runs
+    setTimeout(() => {
+      progressWrap.classList.add('visible');
+      // next frame to trigger CSS transition
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        progressFill.classList.add('run');
+      }));
+    }, 700);
+
+    // 4. Fade out and redirect to overview
+    setTimeout(() => {
+      splash.classList.add('fade-out');
+      setTimeout(() => {
+        window.location.href = '/overview';
+      }, 700);
+    }, 3300);
+  });
+</script>
+
+</body>
+</html>

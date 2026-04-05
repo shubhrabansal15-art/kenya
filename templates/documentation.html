@@ -1,0 +1,451 @@
+{% extends "base.html" %}
+{% block title %}Documentation{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <h1>Data &amp; Documentation</h1>
+  <p class="subtitle">Dataset description, variable definitions, processing pipeline, assumptions, and conceptual frameworks underpinning this analysis.</p>
+</div>
+
+<!-- QUICK NAV -->
+<div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.75rem;">
+  <a href="#dataset"    class="doc-pill">Dataset</a>
+  <a href="#variables"  class="doc-pill">Variables</a>
+  <a href="#processing" class="doc-pill">Processing</a>
+  <a href="#metrics"    class="doc-pill">Derived Metrics</a>
+  <a href="#assumptions" class="doc-pill">Assumptions</a>
+  <a href="#limitations" class="doc-pill">Limitations</a>
+  <a href="#framework"  class="doc-pill">Conceptual Framework</a>
+  <a href="#references" class="doc-pill">References</a>
+</div>
+
+<!-- DATASET -->
+<div class="section-label" id="dataset">Dataset</div>
+
+<div class="card">
+  <div class="card-title">Source &amp; Coverage</div>
+  <div class="card-meta">Our World in Data · World Bank · Global Carbon Project · 2002–2022</div>
+
+  <p style="font-size:0.82rem; color:var(--ink-mid); line-height:1.85; margin-bottom:1rem;">
+    This dashboard draws on publicly available macro-environmental data compiled primarily from
+    <strong>Our World in Data (OWID)</strong>, which aggregates emissions data from the
+    <strong>Global Carbon Project (GCP)</strong>, and economic data from the
+    <strong>World Bank Development Indicators</strong>. The dataset covers 20 years (2002–2022),
+    selected for cross-source completeness, and spans Kenya, all African countries with
+    sufficient data coverage, and global benchmarks.
+  </p>
+
+  <div class="grid-3" style="margin-bottom:0;">
+    <div style="background:var(--cream); border:1px solid var(--border-soft); border-radius:var(--radius); padding:0.85rem 1rem;">
+      <div style="font-size:0.68rem; font-weight:500; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:0.3rem;">Time Period</div>
+      <div style="font-family:'Playfair Display',serif; font-size:1.1rem; color:var(--ink);">2002 – 2022</div>
+      <div style="font-size:0.72rem; color:var(--ink-soft); margin-top:0.2rem;">20 years · annual frequency</div>
+    </div>
+    <div style="background:var(--cream); border:1px solid var(--border-soft); border-radius:var(--radius); padding:0.85rem 1rem;">
+      <div style="font-size:0.68rem; font-weight:500; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:0.3rem;">Geographic Scope</div>
+      <div style="font-family:'Playfair Display',serif; font-size:1.1rem; color:var(--ink);">180+ Countries</div>
+      <div style="font-size:0.72rem; color:var(--ink-soft); margin-top:0.2rem;">Kenya · Africa · Global</div>
+    </div>
+    <div style="background:var(--cream); border:1px solid var(--border-soft); border-radius:var(--radius); padding:0.85rem 1rem;">
+      <div style="font-size:0.68rem; font-weight:500; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:0.3rem;">Primary Focus</div>
+      <div style="font-family:'Playfair Display',serif; font-size:1.1rem; color:var(--ink);">Kenya</div>
+      <div style="font-size:0.72rem; color:var(--ink-soft); margin-top:0.2rem;">benchmarked regionally &amp; globally</div>
+    </div>
+  </div>
+</div>
+
+<!-- VARIABLES -->
+<div class="section-label" id="variables">Variables</div>
+
+<div class="card">
+  <div class="card-title">Variable Definitions</div>
+  <div class="card-meta">all variables used across the dashboard · units · sources</div>
+
+  <table class="doc-table">
+    <thead>
+      <tr>
+        <th>Variable</th>
+        <th>Description</th>
+        <th>Unit</th>
+        <th>Source</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>co2</code></td>
+        <td>Total CO₂ emissions from fossil fuels, cement &amp; flaring</td>
+        <td>Million tonnes</td>
+        <td>OWID</td>
+      </tr>
+      <tr>
+        <td><code>co2_per_capita</code></td>
+        <td>CO₂ emissions per person</td>
+        <td>Tonnes / person</td>
+        <td>OWID</td>
+      </tr>
+      <tr>
+        <td><code>gdp_per_capita</code></td>
+        <td>Economic output per person, constant 2015 USD</td>
+        <td>USD / person</td>
+        <td>OWID</td>
+      </tr>
+      <tr>
+        <td><code>gdp</code> <span class="derived-badge">derived</span></td>
+        <td>Total GDP estimated as gdp_per_capita × population</td>
+        <td>USD</td>
+        <td>Computed</td>
+      </tr>
+      <tr>
+        <td><code>population</code></td>
+        <td>Total population, used for per-capita calculations &amp; bubble sizing</td>
+        <td>Persons</td>
+        <td>OWID</td>
+      </tr>
+      <tr>
+        <td><code>energy_per_capita</code></td>
+        <td>Primary energy consumption per person</td>
+        <td>kWh / person</td>
+        <td>OWID</td>
+      </tr>
+      <tr class="last-row">
+        <td><code>energy_per_gdp</code></td>
+        <td>Energy intensity of GDP — energy consumed per unit of economic output</td>
+        <td>kWh / USD</td>
+        <td>OWID</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- PROCESSING -->
+<div class="section-label" id="processing">Data Processing</div>
+
+<div class="card">
+  <div class="card-title">Processing Pipeline</div>
+  <div class="card-meta">cleaning · transformation · validation</div>
+
+  <div style="display:flex; flex-direction:column; gap:0.6rem; margin-top:0.5rem;">
+
+    <div class="pipeline-step">
+      <div class="pipeline-num">01</div>
+      <div>
+        <div style="font-size:0.82rem; font-weight:500; color:var(--ink); margin-bottom:0.15rem;">Type Coercion</div>
+        <div style="font-size:0.78rem; color:var(--ink-mid); line-height:1.6;">All numeric fields converted using <code style="font-family:'DM Mono',monospace; font-size:0.73rem; color:var(--amber);">pd.to_numeric(errors='coerce')</code>. Non-parseable values become NaN and are handled downstream.</div>
+      </div>
+    </div>
+
+    <div class="pipeline-step">
+      <div class="pipeline-num">02</div>
+      <div>
+        <div style="font-size:0.82rem; font-weight:500; color:var(--ink); margin-bottom:0.15rem;">Missing Value Handling</div>
+        <div style="font-size:0.78rem; color:var(--ink-mid); line-height:1.6;">Rows with missing values in key fields are dropped per-calculation rather than globally, preserving as much data as possible for each chart. Time-series charts fill NaN with zero to avoid line breaks.</div>
+      </div>
+    </div>
+
+    <div class="pipeline-step">
+      <div class="pipeline-num">03</div>
+      <div>
+        <div style="font-size:0.82rem; font-weight:500; color:var(--ink); margin-bottom:0.15rem;">Zero Exclusion for Log Regression</div>
+        <div style="font-size:0.78rem; color:var(--ink-mid); line-height:1.6;">Observations where <code style="font-family:'DM Mono',monospace; font-size:0.73rem; color:var(--amber);">gdp_per_capita</code> or <code style="font-family:'DM Mono',monospace; font-size:0.73rem; color:var(--amber);">co2_per_capita</code> ≤ 0 are excluded before log transformation, since log(0) is undefined.</div>
+      </div>
+    </div>
+
+    <div class="pipeline-step">
+      <div class="pipeline-num">04</div>
+      <div>
+        <div style="font-size:0.82rem; font-weight:500; color:var(--ink); margin-bottom:0.15rem;">Infinity Removal</div>
+        <div style="font-size:0.78rem; color:var(--ink-mid); line-height:1.6;">Elasticity and efficiency metrics can produce ±∞ when divisors approach zero. These are replaced with <code style="font-family:'DM Mono',monospace; font-size:0.73rem; color:var(--amber);">None</code> before serialisation to avoid frontend rendering errors.</div>
+      </div>
+    </div>
+
+    <div class="pipeline-step" style="border-bottom:none; padding-bottom:0;">
+      <div class="pipeline-num">05</div>
+      <div>
+        <div style="font-size:0.82rem; font-weight:500; color:var(--ink); margin-bottom:0.15rem;">Year Filtering</div>
+        <div style="font-size:0.78rem; color:var(--ink-mid); line-height:1.6;">Cross-sectional comparisons filter by a single year. Time-series endpoints default to 2002-2022 but accept user-defined ranges via the slider controls on each page.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- DERIVED METRICS -->
+<div class="section-label" id="metrics">Derived Metrics</div>
+
+<div class="card">
+  <div class="card-title">Four Advanced Metrics</div>
+  <div class="card-meta">formulas · purpose · interpretation · full definitions in Methodology</div>
+
+  <div style="display:flex; flex-direction:column; gap:1rem; margin-top:0.5rem;">
+
+    <div class="metric-block">
+      <div class="metric-label">01 &nbsp;Decoupling Index</div>
+      <div class="metric-formula">Decoupling Index = ΔGDP (%) − ΔCO₂ (%)</div>
+      <p style="font-size:0.78rem; color:var(--ink-mid); line-height:1.7; margin:0.4rem 0 0;">
+        Measures whether GDP growth exceeds emissions growth year-on-year. Positive = relative decoupling. Negative = coupled growth. Used as the primary short-run indicator.
+      </p>
+    </div>
+
+    <div class="metric-block">
+      <div class="metric-label">02 &nbsp;Emission Elasticity</div>
+      <div class="metric-formula">ε = (%ΔCO₂) / (%ΔGDP)</div>
+      <p style="font-size:0.78rem; color:var(--ink-mid); line-height:1.7; margin:0.4rem 0 0;">
+        Captures emissions sensitivity to economic growth. ε &lt; 1 is relative decoupling; ε &lt; 0 is strong decoupling. High volatility is expected in small open economies.
+      </p>
+    </div>
+
+    <div class="metric-block">
+      <div class="metric-label">03 &nbsp;Regression Residual</div>
+      <div class="metric-formula">log(CO₂/cap) = α + β · log(GDP/cap) + ε</div>
+      <p style="font-size:0.78rem; color:var(--ink-mid); line-height:1.7; margin:0.4rem 0 0;">
+        Cross-country log-log OLS regression. The residual ε is Kenya's deviation from the expected emissions curve. Negative = emits less than expected for its income. Converted to % via exp(ε) − 1.
+      </p>
+    </div>
+
+    <div class="metric-block" style="border-bottom:none; padding-bottom:0; margin-bottom:0;">
+      <div class="metric-label">04 &nbsp;CAGR Decoupling Score</div>
+      <div class="metric-formula">CAGR = (End/Start)^(1/n) − 1 &nbsp;·&nbsp; Score = GDP CAGR − CO₂ CAGR</div>
+      <p style="font-size:0.78rem; color:var(--ink-mid); line-height:1.7; margin:0.4rem 0 0;">
+        Long-run structural metric. Smooths year-on-year volatility. A positive score over 20 years is the strongest evidence of sustained relative decoupling.
+      </p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ASSUMPTIONS + LIMITATIONS -->
+<div class="section-label" id="assumptions">Assumptions &amp; Limitations</div>
+
+<div class="grid-2">
+
+  <div class="card">
+    <div class="card-title">Assumptions</div>
+    <div class="card-meta">modelling choices · simplifications</div>
+    <ul class="doc-list">
+      <li>GDP is estimated as <em>gdp_per_capita × population</em> where a standalone GDP column is absent.</li>
+      <li>CO₂ figures cover fossil fuels, cement and flaring only — land-use change emissions are excluded.</li>
+      <li>GDP per capita is in constant 2015 USD; no PPP adjustment is applied unless noted.</li>
+      <li>Countries are treated independently — trade-adjusted or consumption-based emissions are not modelled.</li>
+      <li>The log-log regression assumes a globally consistent income–emissions relationship.</li>
+      <li>Kenya is always excluded from its own regression training set to avoid self-prediction bias.</li>
+    </ul>
+  </div>
+
+  <div class="card" id="limitations">
+    <div class="card-title">Limitations</div>
+    <div class="card-meta">scope · data gaps · interpretation caveats</div>
+    <ul class="doc-list">
+      <li>Data quality and reporting standards vary across countries and years, particularly for smaller African economies.</li>
+      <li>Informal economic activity — significant in Kenya — is not captured in official GDP figures.</li>
+      <li>The energy mix (renewables vs. fossil) is not explicitly modelled; it is inferred from emissions trends.</li>
+      <li>Short-term volatility driven by drought, policy shifts, or commodity cycles can distort year-on-year metrics.</li>
+      <li>CAGR is sensitive to the chosen start and end years; a single anomalous year can distort long-run readings.</li>
+      <li>Regression R² reflects fit across all countries; the residual for a single country carries wider confidence intervals.</li>
+    </ul>
+  </div>
+
+</div>
+
+<!-- CONCEPTUAL FRAMEWORK -->
+<div class="section-label" id="framework">Conceptual Framework</div>
+
+<div class="card">
+  <div class="card-title">Theoretical Foundations</div>
+  <div class="card-meta">Kaya Identity · Environmental Kuznets Curve · IPCC frameworks</div>
+
+  <div class="grid-3" style="margin-top:0.75rem; margin-bottom:0;">
+
+    <div style="padding-right:1rem; border-right:1px solid var(--border-soft);">
+      <div style="font-size:0.78rem; font-weight:500; color:var(--ink); margin-bottom:0.4rem;">Kaya Identity</div>
+      <div style="font-family:'DM Mono',monospace; font-size:0.72rem; color:var(--amber); background:var(--amber-light); padding:0.4rem 0.6rem; border-radius:var(--radius); margin-bottom:0.5rem; line-height:1.6;">
+        CO₂ = Pop × (GDP/Pop) × (E/GDP) × (CO₂/E)
+      </div>
+      <p style="font-size:0.76rem; color:var(--ink-mid); line-height:1.7; margin:0;">
+        Decomposes emissions into population, income, energy intensity, and carbon intensity of energy.
+        Useful for identifying which driver dominates Kenya's emissions trajectory.
+      </p>
+    </div>
+
+    <div style="padding:0 1rem; border-right:1px solid var(--border-soft);">
+      <div style="font-size:0.78rem; font-weight:500; color:var(--ink); margin-bottom:0.4rem;">Environmental Kuznets Curve</div>
+      <div style="font-family:'DM Mono',monospace; font-size:0.72rem; color:var(--amber); background:var(--amber-light); padding:0.4rem 0.6rem; border-radius:var(--radius); margin-bottom:0.5rem; line-height:1.6;">
+        Emissions ↑ then ↓ as income rises
+      </div>
+      <p style="font-size:0.76rem; color:var(--ink-mid); line-height:1.7; margin:0;">
+        Hypothesises that pollution first rises then falls as countries develop. Kenya's position on this curve
+        still on the upward slope is tested via the regression residual analysis.
+      </p>
+    </div>
+
+    <div style="padding-left:1rem;">
+      <div style="font-size:0.78rem; font-weight:500; color:var(--ink); margin-bottom:0.4rem;">IPCC Carbon Intensity</div>
+      <div style="font-family:'DM Mono',monospace; font-size:0.72rem; color:var(--amber); background:var(--amber-light); padding:0.4rem 0.6rem; border-radius:var(--radius); margin-bottom:0.5rem; line-height:1.6;">
+        Intensity = CO₂ / GDP
+      </div>
+      <p style="font-size:0.76rem; color:var(--ink-mid); line-height:1.7; margin:0;">
+        IPCC mitigation scenarios use carbon intensity as a key tracking metric. Falling intensity
+        alongside rising GDP is the definition of relative decoupling used in this dashboard.
+      </p>
+    </div>
+
+  </div>
+</div>
+
+<!-- REFERENCES -->
+<div class="section-label" id="references">References</div>
+
+<div class="card">
+  <div class="card-title">Data &amp; Literature</div>
+  <div class="card-meta">primary sources · methodological references</div>
+  <ul class="doc-list" style="margin-top:0.25rem;">
+    <li><strong>Our World in Data</strong> - CO₂ and Greenhouse Gas Emissions dataset. <em>ourworldindata.org/co2-emissions</em></li>
+    <li><strong>Kaya, Y. &amp; Yokobori, K.</strong> (1997). Environment, Energy, and Economy: Strategies for Sustainability. United Nations University Press.</li>
+    <li><strong>Grossman, G. &amp; Krueger, A.</strong> (1995). Economic Growth and the Environment. <em>Quarterly Journal of Economics, 110(2).</em></li>
+    <li><strong>IPCC</strong> (2022). Mitigation of Climate Change - Working Group III Contribution to the Sixth Assessment Report.</li>
+  </ul>
+</div>
+
+<style>
+  .doc-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.3rem 0.85rem;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+    background: var(--warm-white);
+    border: 1px solid var(--border-soft);
+    border-radius: 20px;
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .doc-pill:hover {
+    background: var(--amber-light);
+    color: var(--amber);
+    border-color: var(--amber-soft);
+  }
+
+  .doc-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.78rem;
+    color: var(--ink-mid);
+    margin-top: 0.75rem;
+  }
+  .doc-table thead tr {
+    border-bottom: 2px solid var(--border);
+  }
+  .doc-table th {
+    text-align: left;
+    padding: 0.45rem 0.75rem 0.45rem 0;
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-family: 'DM Sans', sans-serif;
+  }
+  .doc-table td {
+    padding: 0.45rem 0.75rem 0.45rem 0;
+    border-bottom: 1px solid var(--border-soft);
+    vertical-align: top;
+    line-height: 1.55;
+  }
+  .doc-table tr.last-row td {
+    border-bottom: none;
+  }
+  .doc-table code {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.73rem;
+    color: var(--amber);
+    background: var(--amber-light);
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+  }
+
+  .derived-badge {
+    display: inline-block;
+    font-size: 0.62rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--sage);
+    background: var(--sage-light);
+    padding: 0.05rem 0.4rem;
+    border-radius: 3px;
+    margin-left: 0.35rem;
+    vertical-align: middle;
+  }
+
+  .pipeline-step {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .pipeline-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--amber);
+    background: var(--amber-light);
+    border: 1px solid var(--amber-soft);
+    border-radius: var(--radius);
+    padding: 0.2rem 0.5rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
+  .metric-block {
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-soft);
+    margin-bottom: 0;
+  }
+  .metric-label {
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 0.35rem;
+  }
+  .metric-formula {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--amber);
+    background: var(--amber-light);
+    border: 1px solid var(--amber-soft);
+    border-radius: var(--radius);
+    padding: 0.45rem 0.85rem;
+    display: inline-block;
+  }
+
+  .doc-list {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+  .doc-list li {
+    font-size: 0.8rem;
+    color: var(--ink-mid);
+    line-height: 1.65;
+    padding-left: 1rem;
+    position: relative;
+  }
+  .doc-list li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--ink-faint);
+    font-size: 0.72rem;
+  }
+</style>
+
+{% endblock %}

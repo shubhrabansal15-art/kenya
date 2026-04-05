@@ -1,0 +1,301 @@
+{% extends "base.html" %}
+{% block title %}Overview{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <h1>Kenya Climate Overview</h1>
+  <p class="subtitle">Kenya's emissions are growing faster than its economy — scale effects dominate efficiency gains, indicating persistent emissions-led growth.</p>
+</div>
+
+<!-- YEAR RANGE SLICER -->
+<div class="filter-bar" style="margin-bottom:1.5rem; align-items:flex-end; gap:1.5rem;">
+  <div class="filter-group">
+    <span class="filter-label">Year Range</span>
+    <div style="display:flex; align-items:center; gap:0.6rem;">
+      <input type="number" id="startYear" value="2002" min="1990" max="2022" step="1"
+             style="width:72px;" oninput="debounceLoad()" />
+      <span style="font-size:0.78rem; color:var(--ink-faint); font-family:'DM Mono',monospace;">→</span>
+      <input type="number" id="endYear" value="2022" min="1990" max="2022" step="1"
+             style="width:72px;" oninput="debounceLoad()" />
+    </div>
+  </div>
+
+  <!-- Preset buttons -->
+  <div class="filter-group">
+    <span class="filter-label">Quick Select</span>
+    <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+      <button class="btn preset-btn active" data-start="2002" data-end="2022" onclick="setPreset(this)">2002–2022</button>
+      <button class="btn preset-btn" data-start="2010" data-end="2022" onclick="setPreset(this)">2010–2022</button>
+      <button class="btn preset-btn" data-start="2015" data-end="2022" onclick="setPreset(this)">2015–2022</button>
+      <button class="btn preset-btn" data-start="2002" data-end="2012" onclick="setPreset(this)">2002–2012</button>
+    </div>
+  </div>
+
+  <div id="rangeError" class="error-msg" style="display:none; align-self:center;"></div>
+  <div id="rangeLabel" style="font-size:0.72rem; color:var(--ink-faint); font-family:'DM Mono',monospace; align-self:center; margin-left:auto;"></div>
+</div>
+
+<!-- PRIMARY KPIs: Intensity + Decoupling -->
+<div class="section-label">Carbon Efficiency &amp; Growth Decoupling</div>
+
+<div class="grid-2" style="margin-bottom:0.75rem;">
+
+  <div class="kpi-card">
+    <div class="kpi-label">Emissions Intensity</div>
+    <div class="kpi-value" id="kpi_intensity">—</div>
+    <div class="kpi-delta">kg CO₂ per USD of GDP · latest year</div>
+    <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.5rem;">
+      <span id="kpi_intensity_arrow" style="font-size:1rem;"></span>
+      <span id="kpi_intensity_change" style="font-size:0.72rem; font-family:'DM Mono',monospace;"></span>
+    </div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-label">Decoupling Indicator</div>
+    <div class="kpi-value" id="kpi_decoupling">—</div>
+    <div class="kpi-delta" id="kpi_decoupling_range">GDP CAGR − CO₂ CAGR · 2002–2022</div>
+    <div style="margin-top:0.5rem;">
+      <span id="kpi_decoupling_badge" style="font-size:0.7rem; font-weight:500; letter-spacing:0.05em; padding:0.2rem 0.55rem; border-radius:3px; font-family:'DM Sans',sans-serif;"></span>
+    </div>
+  </div>
+
+</div>
+
+<!-- Interpretive bridge sentence -->
+<p id="kpi_bridge" style="font-size:0.8rem; color:var(--ink-mid); line-height:1.75; margin:0 0 0.75rem; display:none;">
+  Despite improving carbon efficiency, emissions growth continues to outpace economic growth —
+  indicating that scale effects dominate efficiency gains.
+  Emissions grew approximately <strong id="kpi_ratio">—</strong>× faster than GDP over
+  <span id="kpi_bridge_range">2002–2022</span>, indicating persistent emissions-led growth.
+</p>
+
+<!-- SECONDARY KPIs: Levels -->
+<div class="section-label">Current Emissions &amp; Income Levels</div>
+
+<div class="kpi-grid" style="grid-template-columns: repeat(2, 1fr); margin-bottom:0.75rem;">
+  <div class="kpi-card">
+    <div class="kpi-label">CO₂ per Capita (Latest Year)</div>
+    <div class="kpi-value" id="kpi_co2_pc">—</div>
+    <div class="kpi-delta">tonnes per person</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">GDP per Capita (Latest Year)</div>
+    <div class="kpi-value" id="kpi_gdp_pc">—</div>
+    <div class="kpi-delta">USD · constant 2015</div>
+  </div>
+</div>
+
+<!-- TERTIARY KPIs: Dynamics -->
+<div class="section-label" id="cagr_section_label">Annual Growth Rates (CAGR · 2002–2022)</div>
+
+<div class="kpi-grid" style="grid-template-columns: repeat(2, 1fr); margin-bottom:0.75rem;">
+  <div class="kpi-card">
+    <div class="kpi-label">Annual CO₂ Growth Rate</div>
+    <div class="kpi-value" id="kpi_co2_cagr">—</div>
+    <div class="kpi-delta" id="kpi_co2_cagr_label">CAGR · 2002–2022</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Annual GDP Growth Rate</div>
+    <div class="kpi-value" id="kpi_gdp_cagr">—</div>
+    <div class="kpi-delta" id="kpi_gdp_cagr_label">CAGR · 2002–2022</div>
+  </div>
+</div>
+
+<!-- INSIGHT CALLOUT -->
+<div id="insightCallout" class="callout" style="display:none; margin-bottom:1rem;"></div>
+
+<style>
+  .preset-btn.active {
+    background: var(--amber);
+    color: var(--warm-white);
+    border-color: var(--amber);
+  }
+  .kpi-card { transition: opacity 0.2s ease; }
+  .kpi-card.loading { opacity: 0.45; }
+</style>
+
+<script>
+const GREEN   = "#4a7c59";
+const RED     = "#b85c38";
+const NEUTRAL = "#7a7368";
+
+let debounceTimer = null;
+
+function debounceLoad() {
+  clearTimeout(debounceTimer);
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  debounceTimer = setTimeout(loadOverview, 600);
+}
+
+function setPreset(btn) {
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('startYear').value = btn.dataset.start;
+  document.getElementById('endYear').value   = btn.dataset.end;
+  loadOverview();
+}
+
+function getYearRange() {
+  const start = parseInt(document.getElementById('startYear').value);
+  const end   = parseInt(document.getElementById('endYear').value);
+  const errEl = document.getElementById('rangeError');
+
+  if (isNaN(start) || isNaN(end)) {
+    errEl.textContent = 'Enter valid years.';
+    errEl.style.display = 'block';
+    return null;
+  }
+  if (start >= end) {
+    errEl.textContent = 'Start year must be before end year.';
+    errEl.style.display = 'block';
+    return null;
+  }
+  if (end - start < 2) {
+    errEl.textContent = 'Range must span at least 3 years.';
+    errEl.style.display = 'block';
+    return null;
+  }
+  errEl.style.display = 'none';
+  return { start, end };
+}
+
+function setLoading(on) {
+  document.querySelectorAll('.kpi-card').forEach(c => c.classList.toggle('loading', on));
+}
+
+function cagrFn(start, end, n) {
+  if (!start || start <= 0 || !end || n <= 0) return null;
+  return (Math.pow(end / start, 1 / n) - 1) * 100;
+}
+
+function decouplingClass(co2Cagr, gdpCagr) {
+  if (co2Cagr < 0 && gdpCagr > 0) return { label: "Absolute Decoupling",                                        color: GREEN, bg: "rgba(74,124,89,0.12)" };
+  if (gdpCagr > co2Cagr)           return { label: "Relative Decoupling",                                        color: GREEN, bg: "rgba(74,124,89,0.12)" };
+  return                                   { label: "No Decoupling — Emissions structurally outpace economic growth", color: RED,   bg: "rgba(184,92,56,0.12)" };
+}
+
+async function loadOverview() {
+  const range = getYearRange();
+  if (!range) return;
+
+  const { start, end } = range;
+  setLoading(true);
+
+  document.getElementById('rangeLabel').textContent = `Analysing ${start}–${end} (${end - start} yrs)`;
+  const rangeStr = `${start}–${end}`;
+
+  document.getElementById('cagr_section_label').textContent      = `Annual Growth Rates (CAGR · ${rangeStr})`;
+  document.getElementById('kpi_decoupling_range').textContent    = `GDP CAGR − CO₂ CAGR · ${rangeStr}`;
+  document.getElementById('kpi_bridge_range').textContent        = rangeStr;
+
+  try {
+    const [ovRes, tRes] = await Promise.all([
+      fetch("/api/overview"),
+      fetch(`/api/trends?country=Kenya&start=${start}&end=${end}`)
+    ]);
+
+    const data  = await ovRes.json();
+    const tData = await tRes.json();
+
+    const allYears = data.years;
+    const allGdpPc = data.gdp_pc;
+
+    const gdpByYear = {};
+    allYears.forEach((y, i) => { gdpByYear[y] = allGdpPc[i]; });
+
+    const years    = tData.years;
+    const co2Arr   = tData.co2;
+    const gdpArr   = years.map(y => gdpByYear[y] ?? null);
+    const co2PcArr = tData.co2_per_capita;
+
+    const co2pc = data.latest.co2_per_capita;
+    const gdppc = data.latest.gdp_per_capita;
+
+    const n       = years[years.length - 1] - years[0];
+    const co2Cagr = cagrFn(co2Arr[0], co2Arr[co2Arr.length - 1], n);
+    const gdpCagr = cagrFn(gdpArr[0], gdpArr[gdpArr.length - 1], n);
+
+    // Emissions intensity
+    const intArr    = co2PcArr.map((c, i) => gdpArr[i] > 0 ? (c / gdpArr[i]) * 1000 : null);
+    const intLatest = intArr[intArr.length - 1];
+    const intBase   = intArr[0];
+    const intChange = (intBase && intBase !== 0) ? ((intLatest - intBase) / intBase) * 100 : null;
+
+    const decouplingVal = (co2Cagr !== null && gdpCagr !== null) ? gdpCagr - co2Cagr : null;
+    const decClass      = (co2Cagr !== null && gdpCagr !== null) ? decouplingClass(co2Cagr, gdpCagr) : null;
+
+    // ── Emissions Intensity KPI
+    if (intLatest !== null) {
+      document.getElementById("kpi_intensity").textContent = intLatest.toFixed(3) + " kg";
+      if (intChange !== null) {
+        const arrow  = intChange < 0 ? "↓" : "↑";
+        const colour = intChange < 0 ? GREEN : RED;
+        const label  = intChange < 0
+          ? `${Math.abs(intChange).toFixed(1)}% (efficiency improved)`
+          : `+${intChange.toFixed(1)}% (efficiency declined)`;
+        document.getElementById("kpi_intensity_arrow").textContent  = arrow;
+        document.getElementById("kpi_intensity_arrow").style.color  = colour;
+        document.getElementById("kpi_intensity_change").textContent = label;
+        document.getElementById("kpi_intensity_change").style.color = colour;
+      }
+    }
+
+    // ── Decoupling KPI
+    if (decouplingVal !== null && decClass) {
+      const decEl   = document.getElementById("kpi_decoupling");
+      const badgeEl = document.getElementById("kpi_decoupling_badge");
+      decEl.textContent        = `${decouplingVal > 0 ? "+" : ""}${decouplingVal.toFixed(2)} pp`;
+      decEl.style.color        = decClass.color;
+      badgeEl.textContent      = decClass.label;
+      badgeEl.style.color      = decClass.color;
+      badgeEl.style.background = decClass.bg;
+    }
+
+    // ── Bridge sentence (changes 1 & 2)
+    if (co2Cagr !== null && gdpCagr !== null && gdpCagr > 0) {
+      const ratio = (co2Cagr / gdpCagr).toFixed(1);
+      document.getElementById("kpi_ratio").textContent = ratio;
+      document.getElementById("kpi_bridge").style.display = "block";
+    }
+
+    // ── Level KPIs
+    document.getElementById("kpi_co2_pc").textContent = co2pc.toFixed(2) + " t";
+    document.getElementById("kpi_gdp_pc").textContent = "$" + Math.round(gdppc).toLocaleString();
+
+    // ── CAGR KPIs
+    const cagrLabel = `CAGR · ${rangeStr}`;
+    if (co2Cagr !== null) {
+      document.getElementById("kpi_co2_cagr").textContent       = `${co2Cagr > 0 ? "+" : ""}${co2Cagr.toFixed(2)}%`;
+      document.getElementById("kpi_co2_cagr").style.color       = co2Cagr > 0 ? RED : GREEN;
+      document.getElementById("kpi_co2_cagr_label").textContent = cagrLabel;
+    }
+    if (gdpCagr !== null) {
+      document.getElementById("kpi_gdp_cagr").textContent       = `${gdpCagr > 0 ? "+" : ""}${gdpCagr.toFixed(2)}%`;
+      document.getElementById("kpi_gdp_cagr").style.color       = gdpCagr > 0 ? GREEN : RED;
+      document.getElementById("kpi_gdp_cagr_label").textContent = cagrLabel;
+    }
+
+    // ── Insight callout
+    if (co2Cagr !== null && gdpCagr !== null && decClass) {
+      const callout = document.getElementById("insightCallout");
+      callout.style.display = "block";
+      const faster = co2Cagr > gdpCagr;
+      callout.innerHTML = faster
+        ? `<strong>Analytical note (${rangeStr}):</strong> While carbon intensity has declined, indicating improved efficiency, total emissions are growing faster than economic output (CO₂ CAGR ${co2Cagr.toFixed(2)}% vs GDP CAGR ${gdpCagr.toFixed(2)}%). Efficiency gains are insufficient to offset scale effects, resulting in net environmental deterioration.`
+        : `<strong>Analytical note (${rangeStr}):</strong> Kenya shows <strong>relative decoupling</strong> — emissions are rising, but more slowly than economic output (GDP CAGR ${gdpCagr.toFixed(2)}% vs CO₂ CAGR ${co2Cagr.toFixed(2)}%). Carbon intensity is falling, meaning each dollar of GDP is produced with less CO₂ over time. However, absolute emissions continue to increase, so sustainability gains remain partial, not complete. Full time-series evidence is on the <a href="/trends" style="color:var(--amber); text-decoration:none;">Trends</a> page.`;
+    }
+
+  } catch (err) {
+    console.error("Failed to load overview data:", err);
+    document.getElementById('rangeError').textContent = 'Failed to load data. Check console.';
+    document.getElementById('rangeError').style.display = 'block';
+  } finally {
+    setLoading(false);
+  }
+}
+
+loadOverview();
+</script>
+
+{% endblock %}
