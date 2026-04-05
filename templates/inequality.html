@@ -28,9 +28,9 @@
     <canvas id="scatterChart"></canvas>
   </div>
   <p class="card-subtitle">
-    Each bubble represents a country. The dashed line shows the global trend: expected CO₂ emissions at each income level.
-    Kenya (dark green) sits <em>clearly below</em> the trend line, visually proving its structural efficiency advantage.
-    This means Kenya emits less CO₂ than predicted for its GDP—driven by renewable electricity and low industrialisation.
+    Each bubble represents a country; bubble size reflects population. Kenya (dark green) sits
+    at the low-emissions end of the income spectrum, reflecting its renewable-dominated electricity
+    mix and low industrialisation. India is highlighted in amber for regional comparison.
   </p>
 </div>
 
@@ -202,148 +202,7 @@ function renderCharts(data) {
           }
         }
       },
-      plugins: [{
-        // Regression trend line
-        id: "regressionTrendLine",
-        afterDraw(chart) {
-          if (!data.residual || !data.residual.slope) return;
-          const slope     = data.residual.slope;
-          const intercept = data.residual.intercept;
-          const xAxis     = chart.scales.x;
-          const yAxis     = chart.scales.y;
-          const ctx       = chart.ctx;
-          const gdps      = data.scatter.map(d => d.gdp_per_capita).filter(g => g > 0);
-          const minGdp    = Math.min(...gdps);
-          const maxGdp    = Math.max(...gdps);
 
-          ctx.save();
-          ctx.strokeStyle = PALETTE.slate;
-          ctx.lineWidth   = 2;
-          ctx.setLineDash([5, 4]);
-          ctx.beginPath();
-          let first = true;
-          for (let i = 0; i <= 50; i++) {
-            const gdp    = minGdp + (maxGdp - minGdp) * (i / 50);
-            if (gdp > 0) {
-              const logGdp = Math.log(gdp);
-              const logCo2 = slope * logGdp + intercept;
-              const co2    = Math.exp(logCo2);
-              const px     = xAxis.getPixelForValue(gdp);
-              const py     = yAxis.getPixelForValue(co2);
-              if (first) { ctx.moveTo(px, py); first = false; }
-              else          ctx.lineTo(px, py);
-            }
-          }
-          ctx.stroke();
-          ctx.restore();
-
-          chart.lineData = { minGdp, maxGdp, slope, intercept, xAxis, yAxis };
-        }
-      }, {
-        // Change 4: Kenya annotation label below the trend line
-        id: "kenyaAnnotation",
-        afterDraw(chart) {
-          const kenya = data.scatter.find(d => d.country === "Kenya");
-          if (!kenya || !data.residual || !data.residual.slope) return;
-
-          const xAxis = chart.scales.x;
-          const yAxis = chart.scales.y;
-          const ctx   = chart.ctx;
-
-          const px = xAxis.getPixelForValue(kenya.gdp_per_capita);
-          const py = yAxis.getPixelForValue(kenya.co2_per_capita);
-
-          // Expected emissions for Kenya's GDP
-          const logGdp    = Math.log(kenya.gdp_per_capita);
-          const logCo2Exp = data.residual.slope * logGdp + data.residual.intercept;
-          const co2Exp    = Math.exp(logCo2Exp);
-          const pyExp     = yAxis.getPixelForValue(co2Exp);
-
-          // Dashed vertical line from Kenya bubble up to trend line
-          ctx.save();
-          ctx.setLineDash([3, 3]);
-          ctx.strokeStyle = "#4a7c59";
-          ctx.lineWidth   = 1.2;
-          ctx.beginPath();
-          ctx.moveTo(px, py - 16);    // top of Kenya bubble
-          ctx.lineTo(px, pyExp);
-          ctx.stroke();
-          ctx.setLineDash([]);
-
-          // Annotation label
-          const label   = "Below expected emissions";
-          const subLabel = "for its income level";
-          const padding  = 7;
-          const boxW     = 164;
-          const boxH     = 38;
-          // Position label to the right of Kenya, centred on midpoint between bubble and trend line
-          const midY    = (py - 16 + pyExp) / 2;
-          const labelX  = px + 18;
-          const labelY  = Math.max(midY - boxH / 2, chart.chartArea.top + 4);
-
-          ctx.fillStyle   = "rgba(253,251,248,0.94)";
-          ctx.strokeStyle = "#4a7c59";
-          ctx.lineWidth   = 1;
-          ctx.fillRect(labelX, labelY, boxW, boxH);
-          ctx.strokeRect(labelX, labelY, boxW, boxH);
-
-          ctx.fillStyle = "#4a7c59";
-          ctx.font      = "bold 10px 'DM Sans', sans-serif";
-          ctx.fillText(label, labelX + padding, labelY + padding + 10);
-          ctx.fillStyle = "#7a7368";
-          ctx.font      = "10px 'DM Sans', sans-serif";
-          ctx.fillText(subLabel, labelX + padding, labelY + padding + 24);
-          ctx.restore();
-        }
-      }, {
-        // Hover tooltip on trend line
-        id: "lineHoverTooltip",
-        afterEvent(chart, args) {
-          if (!data.residual || !data.residual.slope || !chart.lineData) return;
-          const event = args.event;
-          if (event.type !== "mousemove") { chart.trendTooltip = null; return; }
-          const canvasPos = Chart.helpers.getRelativePosition(event.native, chart);
-          if (!canvasPos) return;
-          if (chart.tooltip._active && chart.tooltip._active.length > 0) { chart.trendTooltip = null; return; }
-          const { minGdp, maxGdp, slope, intercept, xAxis, yAxis } = chart.lineData;
-          let minDist = Infinity, closestGdp = null, closestCo2 = null;
-          for (let i = 0; i <= 50; i++) {
-            const gdp = minGdp + (maxGdp - minGdp) * (i / 50);
-            if (gdp > 0) {
-              const co2 = Math.exp(slope * Math.log(gdp) + intercept);
-              const px  = xAxis.getPixelForValue(gdp);
-              const py  = yAxis.getPixelForValue(co2);
-              const d   = Math.sqrt((canvasPos.x - px) ** 2 + (canvasPos.y - py) ** 2);
-              if (d < minDist) { minDist = d; closestGdp = gdp; closestCo2 = co2; }
-            }
-          }
-          chart.trendTooltip = (minDist < 12 && closestGdp) ? { x: canvasPos.x, y: canvasPos.y, gdp: closestGdp, co2: closestCo2 } : null;
-        }
-      }, {
-        id: "drawTrendTooltip",
-        afterDraw(chart) {
-          if (!chart.trendTooltip) return;
-          const { x, y, gdp, co2 } = chart.trendTooltip;
-          const ctx = chart.ctx;
-          const text1 = "Global Trend";
-          const text2 = `Expected CO₂: ${co2.toFixed(2)} t/person`;
-          const text3 = `GDP: $${Math.round(gdp).toLocaleString()}`;
-          const pad   = 10, lh = 16;
-          const w     = Math.max(160, Math.max(ctx.measureText(text2).width, ctx.measureText(text3).width) + pad * 2);
-          const h     = pad * 2 + lh * 3;
-          const bx    = Math.min(x + 10, chart.width - w - 10);
-          const by    = Math.max(y - h - 10, 10);
-          ctx.save();
-          ctx.fillStyle   = "#fdfbf8"; ctx.strokeStyle = "#ddd8cf"; ctx.lineWidth = 1;
-          ctx.fillRect(bx, by, w, h); ctx.strokeRect(bx, by, w, h);
-          ctx.fillStyle   = "#1e1a14"; ctx.font = "bold 12px 'Playfair Display', serif";
-          ctx.fillText(text1, bx + pad, by + pad + 12);
-          ctx.fillStyle   = "#4a4539"; ctx.font = "11px 'DM Sans', sans-serif";
-          ctx.fillText(text2, bx + pad, by + pad + 28);
-          ctx.fillText(text3, bx + pad, by + pad + 44);
-          ctx.restore();
-        }
-      }]
     });
   }
 
