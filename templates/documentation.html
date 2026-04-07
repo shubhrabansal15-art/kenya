@@ -5,7 +5,7 @@
 
 <div class="page-header">
   <h1>Data &amp; Documentation</h1>
-  <p class="subtitle">Dataset description, variable definitions, processing pipeline, assumptions, and conceptual frameworks underpinning this analysis.</p>
+  <p class="subtitle">Dataset description, variable definitions, processing pipeline, assumptions and conceptual frameworks underpinning this analysis.</p>
 </div>
 
 <!-- QUICK NAV -->
@@ -31,25 +31,25 @@
     This dashboard draws on publicly available macro-environmental data compiled primarily from
     <strong>Our World in Data (OWID)</strong>, which aggregates emissions data from the
     <strong>Global Carbon Project (GCP)</strong>, and economic data from the
-    <strong>World Bank Development Indicators</strong>. The dataset covers 20 years (2002–2022),
-    selected for cross-source completeness, and spans Kenya, all African countries with
-    sufficient data coverage, and global benchmarks.
+    <strong>World Bank Development Indicators</strong>. The dataset covers 20 years (2002-2022),
+    selected for cross-source completeness and spans Kenya, all African countries with
+    sufficient data coverage and global benchmarks.
   </p>
 
   <div class="grid-3" style="margin-bottom:0;">
     <div style="background:var(--cream); border:1px solid var(--border-soft); border-radius:var(--radius); padding:0.85rem 1rem;">
       <div style="font-size:0.68rem; font-weight:500; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:0.3rem;">Time Period</div>
-      <div style="font-family:'Playfair Display',serif; font-size:1.1rem; color:var(--ink);">2002 – 2022</div>
+      <div style="font-family:'TT Ricordi Marmo',serif; font-size:1.1rem; color:var(--ink);">2002 - 2022</div>
       <div style="font-size:0.72rem; color:var(--ink-soft); margin-top:0.2rem;">20 years · annual frequency</div>
     </div>
     <div style="background:var(--cream); border:1px solid var(--border-soft); border-radius:var(--radius); padding:0.85rem 1rem;">
       <div style="font-size:0.68rem; font-weight:500; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:0.3rem;">Geographic Scope</div>
-      <div style="font-family:'Playfair Display',serif; font-size:1.1rem; color:var(--ink);">180+ Countries</div>
+      <div style="font-family:'TT Ricordi Marmo',serif; font-size:1.1rem; color:var(--ink);">180+ Countries</div>
       <div style="font-size:0.72rem; color:var(--ink-soft); margin-top:0.2rem;">Kenya · Africa · Global</div>
     </div>
     <div style="background:var(--cream); border:1px solid var(--border-soft); border-radius:var(--radius); padding:0.85rem 1rem;">
       <div style="font-size:0.68rem; font-weight:500; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:0.3rem;">Primary Focus</div>
-      <div style="font-family:'Playfair Display',serif; font-size:1.1rem; color:var(--ink);">Kenya</div>
+      <div style="font-family:'TT Ricordi Marmo',serif; font-size:1.1rem; color:var(--ink);">Kenya</div>
       <div style="font-size:0.72rem; color:var(--ink-soft); margin-top:0.2rem;">benchmarked regionally &amp; globally</div>
     </div>
   </div>
@@ -85,16 +85,16 @@
         <td>OWID</td>
       </tr>
       <tr>
-        <td><code>gdp_per_capita</code></td>
+        <td><code>gdp_per_capita</code> <span class="derived-badge">derived</span></td>
         <td>Economic output per person, constant 2015 USD</td>
         <td>USD / person</td>
-        <td>OWID</td>
+        <td>Computed</td>
       </tr>
       <tr>
-        <td><code>gdp</code> <span class="derived-badge">derived</span></td>
+        <td><code>gdp</code></td>
         <td>Total GDP estimated as gdp_per_capita × population</td>
         <td>USD</td>
-        <td>Computed</td>
+        <td>OWID</td>
       </tr>
       <tr>
         <td><code>population</code></td>
@@ -110,7 +110,7 @@
       </tr>
       <tr class="last-row">
         <td><code>energy_per_gdp</code></td>
-        <td>Energy intensity of GDP — energy consumed per unit of economic output</td>
+        <td>Energy intensity of GDP: energy consumed per unit of economic output</td>
         <td>kWh / USD</td>
         <td>OWID</td>
       </tr>
@@ -224,10 +224,10 @@
     <div class="card-meta">modelling choices · simplifications</div>
     <ul class="doc-list">
       <li>GDP is estimated as <em>gdp_per_capita × population</em> where a standalone GDP column is absent.</li>
-      <li>CO₂ figures cover fossil fuels, cement and flaring only — land-use change emissions are excluded.</li>
+      <li>CO₂ figures cover fossil fuels, cement and flaring only, land-use change emissions are excluded.</li>
       <li>GDP per capita is in constant 2015 USD; no PPP adjustment is applied unless noted.</li>
-      <li>Countries are treated independently — trade-adjusted or consumption-based emissions are not modelled.</li>
-      <li>The log-log regression assumes a globally consistent income–emissions relationship.</li>
+      <li>Countries are treated independently; trade-adjusted or consumption-based emissions are not modelled.</li>
+      <li>The log-log regression assumes a globally consistent income-emissions relationship.</li>
       <li>Kenya is always excluded from its own regression training set to avoid self-prediction bias.</li>
     </ul>
   </div>
@@ -237,9 +237,9 @@
     <div class="card-meta">scope · data gaps · interpretation caveats</div>
     <ul class="doc-list">
       <li>Data quality and reporting standards vary across countries and years, particularly for smaller African economies.</li>
-      <li>Informal economic activity — significant in Kenya — is not captured in official GDP figures.</li>
+      <li>Informal economic activity, significant in Kenya, is not captured in official GDP figures.</li>
       <li>The energy mix (renewables vs. fossil) is not explicitly modelled; it is inferred from emissions trends.</li>
-      <li>Short-term volatility driven by drought, policy shifts, or commodity cycles can distort year-on-year metrics.</li>
+      <li>Short-term volatility driven by drought, policy shifts or commodity cycles can distort year-on-year metrics.</li>
       <li>CAGR is sensitive to the chosen start and end years; a single anomalous year can distort long-run readings.</li>
       <li>Regression R² reflects fit across all countries; the residual for a single country carries wider confidence intervals.</li>
     </ul>
@@ -262,7 +262,7 @@
         CO₂ = Pop × (GDP/Pop) × (E/GDP) × (CO₂/E)
       </div>
       <p style="font-size:0.76rem; color:var(--ink-mid); line-height:1.7; margin:0;">
-        Decomposes emissions into population, income, energy intensity, and carbon intensity of energy.
+        Decomposes emissions into population, income, energy intensity and carbon intensity of energy.
         Useful for identifying which driver dominates Kenya's emissions trajectory.
       </p>
     </div>
@@ -299,10 +299,22 @@
   <div class="card-title">Data &amp; Literature</div>
   <div class="card-meta">primary sources · methodological references</div>
   <ul class="doc-list" style="margin-top:0.25rem;">
-    <li><strong>Our World in Data</strong> - CO₂ and Greenhouse Gas Emissions dataset. <em>ourworldindata.org/co2-emissions</em></li>
+    <li><strong>Our World in Data</strong> – CO₂ and Greenhouse Gas Emissions dataset. <em>ourworldindata.org/co2-emissions</em></li>
+    <li><strong>Global Carbon Project</strong> (2023). Global Carbon Budget 2023. <em>globalcarbonproject.org</em></li>
+    <li><strong>IEA</strong> (2023). World Energy Outlook 2023. International Energy Agency. <em>iea.org</em></li>
+    <li><strong>World Bank</strong> – World Development Indicators: GDP, population, and energy use data. <em>data.worldbank.org</em></li>
+    <li><strong>EDGAR</strong> – Emissions Database for Global Atmospheric Research. European Commission Joint Research Centre. <em>edgar.jrc.ec.europa.eu</em></li>
     <li><strong>Kaya, Y. &amp; Yokobori, K.</strong> (1997). Environment, Energy, and Economy: Strategies for Sustainability. United Nations University Press.</li>
+    <li><strong>Raupach, M. R. et al.</strong> (2007). Global and regional drivers of accelerating CO₂ emissions. <em>PNAS, 104(24), 10288–10293.</em></li>
+    <li><strong>Ang, B. W.</strong> (2004). Decomposition analysis for policymaking in energy. <em>Energy Policy, 32(9), 1131–1139.</em></li>
     <li><strong>Grossman, G. &amp; Krueger, A.</strong> (1995). Economic Growth and the Environment. <em>Quarterly Journal of Economics, 110(2).</em></li>
-    <li><strong>IPCC</strong> (2022). Mitigation of Climate Change - Working Group III Contribution to the Sixth Assessment Report.</li>
+    <li><strong>Stern, D. I.</strong> (2004). The Rise and Fall of the Environmental Kuznets Curve. <em>World Development, 32(8), 1419–1439.</em></li>
+    <li><strong>Piketty, T. &amp; Chancel, L.</strong> (2015). Carbon and Inequality: From Kyoto to Paris. Paris School of Economics.</li>
+    <li><strong>IPCC</strong> (2022). Mitigation of Climate Change – Working Group III Contribution to the Sixth Assessment Report.</li>
+    <li><strong>IPCC</strong> (2021). The Physical Science Basis – Working Group I Contribution to the Sixth Assessment Report.</li>
+    <li><strong>Friedlingstein, P. et al.</strong> (2023). Global Carbon Budget 2023. <em>Earth System Science Data, 15, 5301–5369.</em></li>
+    <li><strong>Ndegwa, G. et al.</strong> (2020). Charcoal production and its contribution to deforestation and CO₂ emissions in Kenya. <em>Forest Policy and Economics, 118, 102232.</em></li>
+    <li><strong>African Development Bank</strong> (2022). Kenya Economic Outlook 2022. <em>afdb.org</em></li>
   </ul>
 </div>
 

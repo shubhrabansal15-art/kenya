@@ -5,7 +5,7 @@
 
 <div class="page-header">
   <h1>Kenya Climate Overview</h1>
-  <p class="subtitle">Kenya's emissions are growing faster than its economy — scale effects dominate efficiency gains, indicating persistent emissions-led growth.</p>
+  <p class="subtitle">Kenya's emissions are growing faster than its economy,<i class="e"></i> scale effects dominate efficiency gains, indicating persistent emissions-led growth.</p>
 </div>
 
 <!-- YEAR RANGE SLICER -->
@@ -25,10 +25,10 @@
   <div class="filter-group">
     <span class="filter-label">Quick Select</span>
     <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
-      <button class="btn preset-btn active" data-start="2002" data-end="2022" onclick="setPreset(this)">2002–2022</button>
-      <button class="btn preset-btn" data-start="2010" data-end="2022" onclick="setPreset(this)">2010–2022</button>
-      <button class="btn preset-btn" data-start="2015" data-end="2022" onclick="setPreset(this)">2015–2022</button>
-      <button class="btn preset-btn" data-start="2002" data-end="2012" onclick="setPreset(this)">2002–2012</button>
+      <button class="btn preset-btn active" data-start="2002" data-end="2022" onclick="setPreset(this)">2002-2022</button>
+      <button class="btn preset-btn" data-start="2010" data-end="2022" onclick="setPreset(this)">2010-2022</button>
+      <button class="btn preset-btn" data-start="2015" data-end="2022" onclick="setPreset(this)">2015-2022</button>
+      <button class="btn preset-btn" data-start="2002" data-end="2012" onclick="setPreset(this)">2002-2012</button>
     </div>
   </div>
 
@@ -43,7 +43,7 @@
 
   <div class="kpi-card">
     <div class="kpi-label">Emissions Intensity</div>
-    <div class="kpi-value" id="kpi_intensity">—</div>
+    <div class="kpi-value" id="kpi_intensity">-</div>
     <div class="kpi-delta">kg CO₂ per USD of GDP · latest year</div>
     <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.5rem;">
       <span id="kpi_intensity_arrow" style="font-size:1rem;"></span>
@@ -53,8 +53,8 @@
 
   <div class="kpi-card">
     <div class="kpi-label">Decoupling Indicator</div>
-    <div class="kpi-value" id="kpi_decoupling">—</div>
-    <div class="kpi-delta" id="kpi_decoupling_range">GDP CAGR − CO₂ CAGR · 2002–2022</div>
+    <div class="kpi-value" id="kpi_decoupling">-</div>
+    <div class="kpi-delta" id="kpi_decoupling_range">GDP CAGR - CO₂ CAGR · 2002-2022</div>
     <div style="margin-top:0.5rem;">
       <span id="kpi_decoupling_badge" style="font-size:0.7rem; font-weight:500; letter-spacing:0.05em; padding:0.2rem 0.55rem; border-radius:3px; font-family:'DM Sans',sans-serif;"></span>
     </div>
@@ -64,9 +64,9 @@
 
 <!-- Interpretive bridge sentence -->
 <p id="kpi_bridge" style="font-size:0.8rem; color:var(--ink-mid); line-height:1.75; margin:0 0 0.75rem; display:none;">
-  Despite improving carbon efficiency, emissions growth continues to outpace economic growth —
+  Despite improving carbon efficiency, emissions growth continues to outpace economic growth,
   indicating that scale effects dominate efficiency gains.
-  Emissions grew approximately <strong id="kpi_ratio">—</strong>× faster than GDP over
+  Emissions grew approximately <strong id="kpi_ratio">-</strong>× faster than GDP over
   <span id="kpi_bridge_range">2002–2022</span>, indicating persistent emissions-led growth.
 </p>
 
@@ -76,29 +76,29 @@
 <div class="kpi-grid" style="grid-template-columns: repeat(2, 1fr); margin-bottom:0.75rem;">
   <div class="kpi-card">
     <div class="kpi-label">CO₂ per Capita (Latest Year)</div>
-    <div class="kpi-value" id="kpi_co2_pc">—</div>
+    <div class="kpi-value" id="kpi_co2_pc">-</div>
     <div class="kpi-delta">tonnes per person</div>
   </div>
   <div class="kpi-card">
     <div class="kpi-label">GDP per Capita (Latest Year)</div>
-    <div class="kpi-value" id="kpi_gdp_pc">—</div>
+    <div class="kpi-value" id="kpi_gdp_pc">-</div>
     <div class="kpi-delta">USD · constant 2015</div>
   </div>
 </div>
 
 <!-- TERTIARY KPIs: Dynamics -->
-<div class="section-label" id="cagr_section_label">Annual Growth Rates (CAGR · 2002–2022)</div>
+<div class="section-label" id="cagr_section_label">Annual Growth Rates (CAGR · 2002-2022)</div>
 
 <div class="kpi-grid" style="grid-template-columns: repeat(2, 1fr); margin-bottom:0.75rem;">
   <div class="kpi-card">
     <div class="kpi-label">Annual CO₂ Growth Rate</div>
-    <div class="kpi-value" id="kpi_co2_cagr">—</div>
-    <div class="kpi-delta" id="kpi_co2_cagr_label">CAGR · 2002–2022</div>
+    <div class="kpi-value" id="kpi_co2_cagr">-</div>
+    <div class="kpi-delta" id="kpi_co2_cagr_label">CAGR · 2002-2022</div>
   </div>
   <div class="kpi-card">
     <div class="kpi-label">Annual GDP Growth Rate</div>
-    <div class="kpi-value" id="kpi_gdp_cagr">—</div>
-    <div class="kpi-delta" id="kpi_gdp_cagr_label">CAGR · 2002–2022</div>
+    <div class="kpi-value" id="kpi_gdp_cagr">-</div>
+    <div class="kpi-delta" id="kpi_gdp_cagr_label">CAGR · 2002-2022</div>
   </div>
 </div>
 

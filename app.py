@@ -77,7 +77,7 @@ def get_data_insight(label, years, values):
 
         return (
             f"{label} from {clean_years[0]} to {clean_years[-1]} {trend} "
-            f"(from {start:.2f} to {end:.2f}, {diff:+.2f} change, {pct:+.1f}%). "
+            f"(from {start:.f} to {end:.f}, {diff:+.f} change, {pct:+.1f}%). "
             f"Peak value was {max_val:.2f} in {max_year}, "
             f"lowest was {min_val:.2f} in {min_year}. "
             f"The overall direction is {direction}."
@@ -330,3 +330,4 @@ def api_overview():
 
 if __name__ == "__main__":
     app.run(debug=True)
+

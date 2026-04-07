@@ -52,10 +52,10 @@
       <canvas id="cerChart"></canvas>
     </div>
     <p class="card-subtitle">
-      CER measures economic value generated per tonne of per-capita emissions. Unlike aggregate
-      efficiency, this is population-neutral — a fair basis for comparing economies of different
-      sizes. Kenya's high CER relative to income peers confirms that its clean electricity mix
-      is a structural advantage, not an artefact of low industrialisation alone.
+      CER measures the economic value generated per tonne of per-capita emissions. Unlike aggregate
+      efficiency metrics, it is population-neutral, making it a fair basis for comparing economies
+      of different sizes. Kenya's relatively high CER among income peers suggests that its clean 
+      electricity mix represents a structural advantage and low industrialisation.
     </p>
   </div>
 
@@ -66,7 +66,7 @@
       <canvas id="efficiencyChart"></canvas>
     </div>
     <p class="card-subtitle">
-      Higher values mean more economic output per unit of carbon — a measure of green productivity.
+      Higher values mean more economic output per unit of carbon, a measure of green productivity.
       Economies with service-heavy or renewable-powered sectors tend to score higher.
       This metric complements CER by using total rather than per-capita emissions as the denominator.
     </p>
@@ -89,12 +89,11 @@
       Wealthier African nations tend to emit more per capita, but the relationship is far from linear.
       Countries above a hypothetical trendline are carbon-inefficient relative to their income;
       those below demonstrate cleaner development paths. Population size (bubble radius) adds a third
-      dimension — large low-emitters like Ethiopia represent significant global opportunity.
-    </p>
+      dimension,<i class="e"></i> large low-emitters like Ethiopia represent significant global opportunity.
   </div>
 
   <div class="card">
-    <div class="card-title">What Is Driving Emission Changes? (2010 – 2022)</div>
+    <div class="card-title">What Is Driving Emission Changes? (2010 - 2022)</div>
     <div class="card-meta">% contribution to total CO₂ change · population · income · energy intensity · selected countries</div>
     <div class="chart-wrap">
       <canvas id="decompositionChart"></canvas>
@@ -103,7 +102,7 @@
       Breaks total emission change into three drivers using a simplified Kaya decomposition.
       <strong>Population effect</strong>: how much growth is simply more people.
       <strong>Income effect</strong>: how much comes from rising GDP per capita.
-      <strong>Intensity effect</strong>: how much comes from changing energy efficiency — negative means improvement.
+      <strong>Intensity effect</strong>: how much comes from changing energy efficiency,<i class="e"></i> negative means improvement.
     </p>
   </div>
 
@@ -224,7 +223,7 @@ const BASE_CHART_OPTS = {
       borderColor: "#ddd8cf",
       borderWidth: 1,
       padding: 10,
-      titleFont: { family: "'Playfair Display', serif", size: 12 },
+      titleFont: { family: "'TT Ricordi Marmo', serif", size: 12 },
       bodyFont: { family: "'DM Sans', sans-serif", size: 11 }
     }
   },

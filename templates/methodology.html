@@ -5,14 +5,14 @@
 
 <div class="page-header">
   <h1>Methodology</h1>
-  <p class="subtitle">Analytical framework, derived metrics, and statistical methods used to evaluate Kenya's carbon–growth relationship.</p>
+  <p class="subtitle">Analytical framework, derived metrics and statistical methods used to evaluate Kenya's carbon-growth relationship.</p>
 </div>
 
 <!-- RESEARCH QUESTION -->
 <div class="section-label">Research Question</div>
 
 <div class="callout" style="margin-bottom:1.5rem;">
-  Is Kenya achieving economic growth with <strong>lower-than-expected carbon emissions</strong> relative to its income level —
+  Is Kenya achieving economic growth with <strong>lower-than-expected carbon emissions</strong> relative to its income level
   and does this constitute meaningful decoupling?
 </div>
 
@@ -29,13 +29,13 @@
 
   <div class="card">
     <div class="card-title">Decoupling Index</div>
-    <div class="card-meta">GDP growth − CO₂ growth (percentage points) · annual · Kenya</div>
+    <div class="card-meta">GDP growth - CO₂ growth (percentage points) · annual · Kenya</div>
     <div class="chart-wrap short">
       <canvas id="decouplingChart"></canvas>
     </div>
     <p class="card-subtitle">
-      <strong>Formula:</strong> Decoupling Index = ΔGDP% − ΔCO₂%<br><br>
-      Positive values mean GDP grew faster than emissions — <em>relative decoupling</em>.
+      <strong>Formula:</strong> Decoupling Index = ΔGDP% - ΔCO₂%<br><br>
+      Positive values mean GDP grew faster than emissions - <em>relative decoupling</em>.
       Negative values mean emissions outpaced output. The dashed zero line is the threshold
       between coupled and decoupled growth. Points are coloured green (decoupled) or
       terracotta (coupled) for quick reading.
@@ -68,11 +68,11 @@
   <div class="card-meta">conceptual framework · policy relevance</div>
   <p class="card-subtitle" style="border:none; padding:0; margin:0; font-size:0.82rem; line-height:1.85; color:var(--ink-mid);">
     The dominant assumption in development economics has historically been that economic growth
-    requires proportional increases in energy use and emissions — a coupled relationship.
+    requires proportional increases in energy use and emissions, a coupled relationship.
     <strong>Decoupling challenges this assumption</strong> by asking whether GDP and CO₂ can diverge:
     whether a country can grow richer while emitting less per unit of output.<br><br>
     For Kenya, this matters for two reasons. First, Kenya is a developing economy under pressure
-    to grow — yet is disproportionately vulnerable to climate change it did not cause.
+    to grow, yet is disproportionately vulnerable to climate change it did not cause.
     Second, if Kenya can demonstrate decoupling, it provides a replicable model for other
     low-income African economies navigating the same tension between development and emissions.<br><br>
     <strong>Relative decoupling</strong> (emissions grow, but slower than GDP) is a necessary first step.
@@ -85,7 +85,7 @@
 <div class="section-label">Regression Analysis</div>
 
 <div class="card">
-  <div class="card-title">Regression Residual — Kenya vs Global Income–Emissions Curve</div>
+  <div class="card-title">Regression Residual: Kenya vs Global Income-Emissions Curve</div>
   <div class="card-meta">log-linear OLS · CO₂ per capita ~ GDP per capita · cross-country · latest year</div>
   <div class="callout" id="regressionCallout" style="margin:0.85rem 0 0;">
     Loading regression result…
@@ -94,31 +94,31 @@
     <strong>Why log regression?</strong> The income–emissions relationship is non-linear:
     richer countries emit more, but with diminishing returns. Taking the natural log of both
     GDP per capita and CO₂ per capita linearises this curve for standard OLS estimation.
-    The slope β is the income elasticity of emissions — how much CO₂ changes for each 1% rise
+    The slope β is the income elasticity of emissions, how much CO₂ changes for each 1% rise
     in income. The residual is Kenya's actual log-CO₂ minus its predicted log-CO₂ given its
     income. A negative residual means Kenya emits <em>less</em> than the global norm for its
-    wealth level — the primary evidence of structural carbon efficiency.
+    wealth level, the primary evidence of structural carbon efficiency.
   </p>
 </div>
 
 <!-- CAGR CARDS -->
-<div class="section-label">Long-Run CAGR Summary (2002 – 2022)</div>
+<div class="section-label">Long-Run CAGR Summary (2002 - 2022)</div>
 
 <div class="kpi-grid">
   <div class="kpi-card">
     <div class="kpi-label">GDP CAGR</div>
-    <div class="kpi-value" id="kpi_gdp_cagr">—</div>
-    <div class="kpi-delta">GDP per capita · 2002–2022</div>
+    <div class="kpi-value" id="kpi_gdp_cagr">-</div>
+    <div class="kpi-delta">GDP per capita · 2002-2022</div>
   </div>
   <div class="kpi-card">
     <div class="kpi-label">CO₂ CAGR</div>
-    <div class="kpi-value" id="kpi_co2_cagr">—</div>
-    <div class="kpi-delta">total CO₂ · 2002–2022</div>
+    <div class="kpi-value" id="kpi_co2_cagr">-</div>
+    <div class="kpi-delta">total CO₂ · 2002-2022</div>
   </div>
   <div class="kpi-card">
     <div class="kpi-label">Decoupling Score</div>
-    <div class="kpi-value" id="kpi_decoupling_score">—</div>
-    <div class="kpi-delta" id="kpi_decoupling_label">Decoupling Score = GDP CAGR − CO₂ CAGR · long-run structural metric</div>
+    <div class="kpi-value" id="kpi_decoupling_score">-</div>
+    <div class="kpi-delta" id="kpi_decoupling_label">Decoupling Score = GDP CAGR - CO₂ CAGR · long-run structural metric</div>
   </div>
 </div>
 
@@ -128,9 +128,9 @@
   <p class="card-subtitle" style="border:none; padding:0; margin:0; font-size:0.82rem; line-height:1.85; color:var(--ink-mid);">
     CAGR is used to summarise long-run growth by smoothing year-to-year volatility. In this
     analysis, it underpins the <strong>Decoupling Score</strong>
-    (<strong>GDP CAGR − CO₂ CAGR</strong>), which provides a structural measure of whether
+    (<strong>GDP CAGR - CO₂ CAGR</strong>), which provides a structural measure of whether
     economic growth outpaces emissions over the full period. A positive score indicates that
-    GDP expanded faster than emissions on a sustained basis — the long-run complement to the
+    GDP expanded faster than emissions on a sustained basis, the long-run complement to the
     annual decoupling index shown above.
   </p>
 </div>
@@ -140,9 +140,9 @@
 
 <div class="callout" style="margin-bottom:1.5rem;">
   These four metrics form a deliberate hierarchy. The <strong>regression residual</strong> is the
-  primary evidence — it benchmarks Kenya against a global income–emissions curve and is the most
+  primary evidence, it benchmarks Kenya against a global income-emissions curve and is the most
   methodologically robust indicator of structural carbon efficiency. The <strong>elasticity</strong>
-  is the secondary metric — it captures year-on-year sensitivity but is volatile and should be
+  is the secondary metric, it captures year-on-year sensitivity but is volatile and should be
   read alongside the long-run CAGR. The <strong>decoupling index</strong> and <strong>CAGR score</strong>
   are summary metrics that communicate the same underlying relationship in more accessible terms.
 </div>
@@ -160,7 +160,7 @@ const BASE_OPTS = {
       borderColor: "#ddd8cf",
       borderWidth: 1,
       padding: 10,
-      titleFont: { family: "'Playfair Display', serif", size: 12 },
+      titleFont: { family: "'TT Ricordi Marmo', serif", size: 12 },
       bodyFont:  { family: "'DM Sans', sans-serif", size: 11 }
     }
   },
@@ -312,8 +312,8 @@ async function loadMetrics() {
       `<strong>${data.residual.n}</strong> countries ` +
       `(R² = <strong>${data.residual.r2.toFixed(2)}</strong>, year = ${data.residual.year}). ` +
       (deviation < 0
-        ? "A negative residual confirms structural carbon efficiency — Kenya's clean energy mix decouples emissions from GDP growth."
-        : "A positive residual suggests Kenya emits more than expected for its income level — worth monitoring as industrialisation continues.");
+        ? "A negative residual confirms structural carbon efficiency, Kenya's clean energy mix decouples emissions from GDP growth."
+        : "A positive residual suggests Kenya emits more than expected for its income level, worth monitoring as industrialisation continues.");
   } else {
     regEl.textContent = "Regression data unavailable for this year.";
   }
@@ -384,9 +384,9 @@ loadMetrics();
         Emissions ↑ then ↓ as income rises
       </div>
       <p style="font-size:0.76rem; color:var(--ink-mid); line-height:1.7; margin:0;">
-        Hypothesises that pollution first rises then falls as countries develop. Kenya's position on this curve —
-        still on the upward slope — is tested via the regression residual analysis.
-        The regression analysis tests Kenya's position relative to the expected income–emissions relationship implied by this framework.
+        Hypothesises that pollution first rises then falls as countries develop. Kenya's position on this curve,
+        still on the upward slope is tested via the regression residual analysis.
+        The regression analysis tests Kenya's position relative to the expected income-emissions relationship implied by this framework.
       </p>
     </div>
 

@@ -121,7 +121,7 @@ const BASE_CHART_OPTS = {
       borderColor: "#ddd8cf",
       borderWidth: 1,
       padding: 10,
-      titleFont: { family: "'Playfair Display', serif", size: 12 },
+      titleFont: { family: "'TT Ricordi Marmo', serif", size: 12 },
       bodyFont: { family: "'DM Sans', sans-serif", size: 11 }
     }
   },
@@ -215,7 +215,7 @@ function renderCharts(data) {
     regressionEl.innerHTML =
       `Kenya emits <strong style="color:${colour}">${Math.abs(deviation).toFixed(1)}% ${dir}</strong> CO₂ ` +
       `than predicted for its income level, based on a log-linear regression across ${data.residual.n} countries ` +
-      `(R² = ${data.residual.r2.toFixed(2)}). A negative residual confirms structural carbon efficiency — ` +
+      `(R² = ${data.residual.r2.toFixed(2)}). A negative residual confirms structural carbon efficiency, ` +
       `Kenya's clean energy mix decouples emissions from GDP growth.`;
   } else {
     regressionEl.textContent = "Regression data unavailable for this year.";
