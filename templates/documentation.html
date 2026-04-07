@@ -5,7 +5,7 @@
 
 <div class="page-header">
   <h1>Data &amp; Documentation</h1>
-  <p class="subtitle">Dataset description, variable definitions, processing pipeline, assumptions and conceptual frameworks underpinning this analysis.</p>
+  <p class="subtitle">Dataset description, variable definitions, processing pipeline and assumptions underpinning this analysis.</p>
 </div>
 
 <!-- QUICK NAV -->
@@ -16,7 +16,6 @@
   <a href="#metrics"    class="doc-pill">Derived Metrics</a>
   <a href="#assumptions" class="doc-pill">Assumptions</a>
   <a href="#limitations" class="doc-pill">Limitations</a>
-  <a href="#framework"  class="doc-pill">Conceptual Framework</a>
   <a href="#references" class="doc-pill">References</a>
 </div>
 
@@ -244,53 +243,6 @@
       <li>Regression R² reflects fit across all countries; the residual for a single country carries wider confidence intervals.</li>
     </ul>
   </div>
-
-</div>
-
-<!-- CONCEPTUAL FRAMEWORK -->
-<div class="section-label" id="framework">Conceptual Framework</div>
-
-<div class="card">
-  <div class="card-title">Theoretical Foundations</div>
-  <div class="card-meta">Kaya Identity · Environmental Kuznets Curve · IPCC frameworks</div>
-
-  <div class="grid-3" style="margin-top:0.75rem; margin-bottom:0;">
-
-    <div style="padding-right:1rem; border-right:1px solid var(--border-soft);">
-      <div style="font-size:0.78rem; font-weight:500; color:var(--ink); margin-bottom:0.4rem;">Kaya Identity</div>
-      <div style="font-family:'DM Mono',monospace; font-size:0.72rem; color:var(--amber); background:var(--amber-light); padding:0.4rem 0.6rem; border-radius:var(--radius); margin-bottom:0.5rem; line-height:1.6;">
-        CO₂ = Pop × (GDP/Pop) × (E/GDP) × (CO₂/E)
-      </div>
-      <p style="font-size:0.76rem; color:var(--ink-mid); line-height:1.7; margin:0;">
-        Decomposes emissions into population, income, energy intensity and carbon intensity of energy.
-        Useful for identifying which driver dominates Kenya's emissions trajectory.
-      </p>
-    </div>
-
-    <div style="padding:0 1rem; border-right:1px solid var(--border-soft);">
-      <div style="font-size:0.78rem; font-weight:500; color:var(--ink); margin-bottom:0.4rem;">Environmental Kuznets Curve</div>
-      <div style="font-family:'DM Mono',monospace; font-size:0.72rem; color:var(--amber); background:var(--amber-light); padding:0.4rem 0.6rem; border-radius:var(--radius); margin-bottom:0.5rem; line-height:1.6;">
-        Emissions ↑ then ↓ as income rises
-      </div>
-      <p style="font-size:0.76rem; color:var(--ink-mid); line-height:1.7; margin:0;">
-        Hypothesises that pollution first rises then falls as countries develop. Kenya's position on this curve
-        still on the upward slope is tested via the regression residual analysis.
-      </p>
-    </div>
-
-    <div style="padding-left:1rem;">
-      <div style="font-size:0.78rem; font-weight:500; color:var(--ink); margin-bottom:0.4rem;">IPCC Carbon Intensity</div>
-      <div style="font-family:'DM Mono',monospace; font-size:0.72rem; color:var(--amber); background:var(--amber-light); padding:0.4rem 0.6rem; border-radius:var(--radius); margin-bottom:0.5rem; line-height:1.6;">
-        Intensity = CO₂ / GDP
-      </div>
-      <p style="font-size:0.76rem; color:var(--ink-mid); line-height:1.7; margin:0;">
-        IPCC mitigation scenarios use carbon intensity as a key tracking metric. Falling intensity
-        alongside rising GDP is the definition of relative decoupling used in this dashboard.
-      </p>
-    </div>
-
-  </div>
-</div>
 
 <!-- REFERENCES -->
 <div class="section-label" id="references">References</div>
