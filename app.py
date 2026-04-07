@@ -171,10 +171,9 @@ def api_african_comparison():
 @app.route("/refresh")
 def refresh():
     global df, kenya
-    with _df_lock:
-        df = load_data()
-        kenya = get_country(df, "Kenya")
-        india = get_country(df, "India")
+    df = load_data()
+    kenya = get_country(df, "Kenya")
+    india = get_country(df, "India")
     return "Data refreshed", 200
 
 
