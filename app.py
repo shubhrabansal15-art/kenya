@@ -25,6 +25,8 @@ from services import (
 )
 
 app = Flask(__name__)
+df = load_data()
+kenya = get_country(df, "Kenya")
  
 def safe(val, decimals=2):
     """Convert a potentially NaN value to a rounded float or None."""
