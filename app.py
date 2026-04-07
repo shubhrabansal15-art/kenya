@@ -25,77 +25,7 @@ from services import (
 )
 
 app = Flask(__name__)
-
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-_df_lock = __import__('threading').Lock()
-
-
-def _ai_insight(prompt):
-    if not OPENAI_API_KEY:
-        return "AI key not configured (set OPENAI_API_KEY); showing quick summary instead."
-    try:
-        import openai
-        openai.api_key = OPENAI_API_KEY
-        response = openai.ChatCompletion.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=220,
-            temperature=0.5,
-        )
-        return response.choices[0].message.content.strip()
-    except Exception as e:
-        return f"AI insight call failed: {e}."
-
-
-def get_data_insight(label, years, values):
-    if not values or len(values) < 2:
-        return f"Not enough data to analyze {label}."
-
-    try:
-        # Convert to plain Python floats and strip NaNs
-        clean = [
-            (y, float(v))
-            for y, v in zip(years, values)
-            if v is not None and not (isinstance(v, float) and math.isnan(v))
-        ]
-        if len(clean) < 2:
-            return f"Not enough valid data points to analyze {label}."
-
-        clean_years, clean_vals = zip(*clean)
-        start = clean_vals[0]
-        end = clean_vals[-1]
-        diff = end - start
-        pct = (diff / start * 100) if start != 0 else 0
-
-        max_val = max(clean_vals)
-        min_val = min(clean_vals)
-        max_year = clean_years[clean_vals.index(max_val)]
-        min_year = clean_years[clean_vals.index(min_val)]
-
-        trend = "increased" if diff > 0 else "decreased" if diff < 0 else "remained stable"
-        direction = "upward" if diff > 0 else "downward" if diff < 0 else "flat"
-
-        return (
-            f"{label} from {clean_years[0]} to {clean_years[-1]} {trend} "
-            f"(from {start:.f} to {end:.f}, {diff:+.f} change, {pct:+.1f}%). "
-            f"Peak value was {max_val:.2f} in {max_year}, "
-            f"lowest was {min_val:.2f} in {min_year}. "
-            f"The overall direction is {direction}."
-        )
-    except Exception as e:
-        return f"Could not compute insight for {label}: {e}."
-
-
-# Load once at startup
-try:
-    df = load_data()
-except Exception as e:
-    raise RuntimeError(f"Failed to load climate data: {e}")
-
-kenya = get_country(df, "Kenya")
-india = get_country(df, "India")  
-
-
+ 
 def safe(val, decimals=2):
     """Convert a potentially NaN value to a rounded float or None."""
     try:
@@ -237,40 +167,6 @@ def api_african_comparison():
     except Exception as e:
         print(f"ERROR in api_african_comparison: {e}")  # ← add this
         abort(400, description=str(e))
-
-
-@app.route("/api/insight")
-def api_insight():
-    chart = request.args.get("chart", "total")
-    start = int(request.args.get("start", df["year"].min()))
-    end = int(request.args.get("end", df["year"].max()))
-
-    data = get_trend_data(df, "Kenya", start, end)
-    total_series = data.get("co2", [])
-    pc_series = data.get("co2_per_capita", [])
-
-    if chart == "percapita":
-        label = "CO₂ per capita"
-        values = pc_series
-    else:
-        label = "Total CO₂ emissions"
-        values = total_series
-
-    local_summary = get_data_insight(label, data.get("years", []), values)
-
-    if OPENAI_API_KEY:
-        prompt = (
-            f"Use the following factual data to craft a concise academic insight for Kenya: {local_summary} "
-            "Keep it tight (1-2 sentences) with clear policy relevance and chart interpretation."
-        )
-        raw = _ai_insight(prompt)
-        if raw.startswith("AI key not configured") or raw.startswith("AI insight call failed"):
-            raw = local_summary
-    else:
-        raw = local_summary
-
-    return jsonify({"insight": raw})
-
 
 @app.route("/refresh")
 def refresh():

@@ -52,7 +52,6 @@
     absolute volumes remain low by global standards, Kenya contributes under 0.1% of
     global emissions.
   </p>
-  <div id="totalInsight" class="insight-callout">Loading insight…</div>
 </div>
 
 <!-- PER CAPITA -->
@@ -70,7 +69,6 @@
     reflecting the clean electricity mix (dominated by geothermal and hydro) and a largely
     rural, low-consumption economy.
   </p>
-  <div id="pcInsight" class="insight-callout">Loading insight…</div>
 </div>
 
 <style>
@@ -101,24 +99,6 @@
     background: var(--amber);
     border: 2px solid var(--warm-white);
     cursor: pointer;
-  }
-
-  .insight-callout {
-    margin-top: 0.85rem;
-    padding: 0.75rem 1rem;
-    background: linear-gradient(135deg, var(--amber-light) 0%, var(--terra-light) 100%);
-    border: 1px solid var(--amber-soft);
-    border-radius: var(--radius);
-    font-size: 0.78rem;
-    color: var(--ink-mid);
-    line-height: 1.65;
-    font-style: italic;
-    min-height: 2.5rem;
-    transition: opacity 0.2s;
-  }
-
-  .insight-callout.loading {
-    opacity: 0.45;
   }
 </style>
 
@@ -288,27 +268,6 @@ function renderCharts(years, co2, co2pc) {
   });
 }
 
-let insightTimer = null;
-
-async function fetchInsight(type) {
-  const start = startSlider.value;
-  const end   = endSlider.value;
-  const el    = document.getElementById(type === "total" ? "totalInsight" : "pcInsight");
-
-  el.classList.add("loading");
-  el.textContent = "Generating insight…";
-
-  try {
-    const res  = await fetch(`/api/insight?chart=${type}&start=${start}&end=${end}`);
-    const data = await res.json();
-    el.textContent = data.insight;
-  } catch {
-    el.textContent = "Insight unavailable.";
-  } finally {
-    el.classList.remove("loading");
-  }
-}
-
 function updateCharts() {
   let start = +startSlider.value;
   let end   = +endSlider.value;
@@ -322,12 +281,6 @@ function updateCharts() {
 
   const d = filterData(start, end);
   renderCharts(d.years, d.co2, d.co2pc);
-
-  clearTimeout(insightTimer);
-  insightTimer = setTimeout(() => {
-    fetchInsight("total");
-    fetchInsight("percapita");
-  }, 600);
 }
 
 startSlider.addEventListener("input", updateCharts);
@@ -342,8 +295,6 @@ chartType.addEventListener("change", () => {
 // Initial render
 const initial = filterData(2002, 2022);
 renderCharts(initial.years, initial.co2, initial.co2pc);
-fetchInsight("total");
-fetchInsight("percapita");
 </script>
 
 {% endblock %}
